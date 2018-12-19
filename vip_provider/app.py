@@ -125,7 +125,7 @@ def create_vip(provider_name, env):
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    return response_created(identifier=vip.id)
+    return response_created(identifier=str(vip.id), ip=vip.vip_ip)
 
 
 @app.route(
