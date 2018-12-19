@@ -1,4 +1,3 @@
-from vip_provider.models import Vip
 from vip_provider.credentials.base import CredentialBase, CredentialAdd
 
 
@@ -62,16 +61,6 @@ class CredentialAWS(CredentialBase):
         return self.collection_last.find_one({
             "latestUsed": True, "environment": self.environment
         })
-
-    def get_next_zone_from(self, zone_name):
-        zones = list(self.zones.keys())
-        base_index = zones.index(zone_name)
-
-        next_index = base_index + 1
-        if next_index >= len(zones):
-            next_index = 0
-
-        return zones[next_index]
 
     def _get_zone(self):
         exist = self.exist_node()
