@@ -73,12 +73,9 @@ class ProviderBase(object):
     def _delete_vip(self, vip):
         raise NotImplementedError
 
-    def get_vip(self, identifier_or_path):
+    def get_vip(self, identifier):
         try:
-            return Vip.objects(identifier=identifier_or_path).get()
+            return Vip.objects(id=identifier).get()
         except Vip.DoesNotExist:
             pass
-        try:
-            return Vip.objects(path__icontains=identifier_or_path).get()
-        except Vip.DoesNotExist:
-            return None
+        return None
