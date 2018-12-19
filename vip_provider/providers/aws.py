@@ -8,6 +8,8 @@ from vip_provider.credentials.aws import CredentialAWS, CredentialAddAWS
 from vip_provider.providers.base import ProviderBase
 from vip_provider.clients.team import TeamClient
 from vip_provider.drivers.aws import NetworkLBDriver
+from dns.resolver import Resolver
+from dns.exception import DNSException
 
 
 STATE_AVAILABLE = 'active'
@@ -57,6 +59,23 @@ class ProviderAWS(ProviderBase):
     def waiting_be_available(self, vip):
         return self.__waiting_be(STATE_AVAILABLE, vip)
 
+    @staticmethod
+    def dns2ip(dns, retries=90, wait=1):
+        resolver = Resolver()
+        for attempt in range(0, retries):
+
+            try:
+                answer = resolver.query(dns)
+            except DNSException:
+                pass
+            else:
+                ips = [str(a) for a in answer]
+                if ips:
+                    return ips[0]
+
+            sleep(wait)
+
+        return False
     def _create_vip(self, vip):
         new_balancer = self.client.create_balancer(
             name=vip.group,
@@ -90,7 +109,7 @@ class ProviderAWS(ProviderBase):
             port=3306
         )
         vip.vip_id = new_balancer.id
-        vip.vip_ip = new_balancer.ip
+        vip.vip_ip = self.dns2ip(new_balancer.ip)
         vip.target_group_id = new_target_group.id
 
     def _delete_vip(self, vip_obj):
