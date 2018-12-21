@@ -252,10 +252,24 @@ class NetworkLBDriver(ElasticLBDriver):
         )
         return listener
 
-    def register_targets(self, target_group, instances):
+    def set_subnet(self, balancer_id, subnets):
+        params = {
+            'Action': 'SetSubnets',
+            'LoadBalancerArn': balancer_id,
+        }
+
+        subnet_tmpl = 'Subnets.member.{}'
+        for pos, subnet in enumerate(subnets):
+            params[subnet_tmpl.format(pos+1)] = subnet
+
+        self.connection.request(ROOT, params=params).object
+
+        return True
+
+    def register_targets(self, target_group_id, instances):
         params = {
             'Action': 'RegisterTargets',
-            'TargetGroupArn': target_group.id,
+            'TargetGroupArn': target_group_id,
         }
 
         targets_tmpl = 'Targets.member.{}.{}'
@@ -267,10 +281,10 @@ class NetworkLBDriver(ElasticLBDriver):
 
         return True
 
-    def deregister_targets(self, target_group, instances):
+    def deregister_targets(self, target_group_id, instances):
         params = {
             'Action': 'DeregisterTargets',
-            'TargetGroupArn': target_group.id,
+            'TargetGroupArn': target_group_id,
         }
 
         targets_tmpl = 'Targets.member.{}.{}'
