@@ -150,14 +150,16 @@ class NetworkLBDriver(ElasticLBDriver):
         )
         return target_group
 
-    def create_balancer(self, name, port, subnet_id):
+    def create_balancer(self, name, port, subnets):
         params = {
             'Action': 'CreateLoadBalancer',
             'Name': name,
             'Scheme': 'internal',
-            'Subnets.member.1': subnet_id,
             'Type': 'network'
         }
+        subnet_tmpl = 'Subnets.member.{}'
+        for pos, subnet in enumerate(subnets):
+            params[subnet_tmpl.format(pos+1)] = subnet
 
         data = self.connection.request(ROOT, params=params).object
 
