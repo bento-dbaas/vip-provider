@@ -88,6 +88,17 @@ class NetworkLBDriver(ElasticLBDriver):
 
         return balancer
 
+    def get_target_healthy(self, target_group_id):
+        params = {
+            'Action': 'DescribeTargetHealth',
+            'TargetGroupArn': target_group_id
+        }
+        data = self.connection.request(ROOT, params=params).object
+        state = self._to_states(data)
+
+        return state
+
+
     def get_target_group(self, balancer_id=None, target_group_id=None, ex_fetch_tags=False):
         params = {
             'Action': 'DescribeTargetGroups',
@@ -112,6 +123,14 @@ class NetworkLBDriver(ElasticLBDriver):
         return [self._to_balancer(el)
                 for el in findall(element=data, xpath=xpath, namespace=NS)]
 
+    def _to_states(self, data):
+        xpath = 'DescribeTargetHealthResult/TargetHealthDescriptions/member'
+        for el in findall(element=data, xpath=xpath, namespace=NS):
+            state = self._to_state(el)
+            if state == 'healthy':
+                return True
+        return False
+
     def _to_balancer(self, el):
         name = findtext(element=el, xpath='LoadBalancerName', namespace=NS)
         dns_name = findtext(el, xpath='DNSName', namespace=NS)
@@ -127,6 +146,9 @@ class NetworkLBDriver(ElasticLBDriver):
         )
         balancer._members = []
         return balancer
+
+    def _to_state(self, el):
+        return findtext(el, xpath='TargetHealth/State', namespace=NS)
 
     def _to_target_groups(self, data):
         xpath = 'DescribeTargetGroupsResult/TargetGroups/member'

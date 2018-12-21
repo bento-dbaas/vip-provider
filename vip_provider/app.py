@@ -153,6 +153,27 @@ def register_target(provider_name, env):
         return response_invalid_request(str(e))
     return response_ok()
 
+
+@app.route("/<string:provider_name>/<string:env>/vip/healthy", methods=['POST'])
+@auth.login_required
+def get_vip_healthy(provider_name, env):
+    data = request.get_json()
+    vip_id = data.get("vip_id", None)
+
+    if not(vip_id):
+        return response_invalid_request("Invalid data {}".format(data))
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        vip = Vip.objects(id=vip_id).get()
+        state = provider.get_vip_healthy(vip)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+    return response_ok(healthy=state)
+
+
 @app.route(
     "/<string:provider_name>/<string:env>/vip/<string:identifier>",
     methods=['DELETE']

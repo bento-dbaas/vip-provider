@@ -80,6 +80,9 @@ class ProviderAWS(ProviderBase):
     def register_targets(self, balancer_id, target_group_id, zone_id, instances):
         self.client.register_targets(target_group_id, instances)
 
+    def get_vip_healthy(self, vip):
+        return self.client.get_target_healthy(vip.target_group_id)
+
     def _create_vip(self, vip):
         new_balancer = self.client.create_balancer(
             name=vip.group,
