@@ -76,11 +76,15 @@ class ProviderAWS(ProviderBase):
             sleep(wait)
 
         return False
+
+    def register_targets(self, balancer_id, target_group_id, zone_id, instances):
+        self.client.register_targets(target_group_id, instances)
+
     def _create_vip(self, vip):
         new_balancer = self.client.create_balancer(
             name=vip.group,
             port=vip.port,
-            subnet_id=self.credential.zone
+            subnets=list(self.credential.zones.keys())
         )
         self.waiting_be_available(new_balancer)
 

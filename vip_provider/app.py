@@ -8,6 +8,7 @@ from mongoengine import connect
 from vip_provider.settings import APP_USERNAME, APP_PASSWORD, \
     MONGODB_PARAMS, MONGODB_DB
 from vip_provider.providers import get_provider_to
+from vip_provider.models import Vip
 
 
 app = Flask(__name__)
@@ -127,6 +128,30 @@ def create_vip(provider_name, env):
         return response_invalid_request(str(e))
     return response_created(identifier=str(vip.id), ip=vip.vip_ip)
 
+
+@app.route("/<string:provider_name>/<string:env>/vip/register_target", methods=['POST'])
+@auth.login_required
+def register_target(provider_name, env):
+    data = request.get_json()
+    instance_id = data.get("instance_id", None)
+    port = data.get("port", None)
+    vip_id = data.get("vip_id", None)
+    zone_id = data.get("zone_id", None)
+
+    if not(instance_id and port and vip_id):
+        return response_invalid_request("Invalid data {}".format(data))
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        vip = Vip.objects(id=vip_id).get()
+        vip = provider.register_targets(vip.vip_id, vip.target_group_id, zone_id, [
+            {'id': instance_id, 'port': port}
+        ])
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+    return response_ok()
 
 @app.route(
     "/<string:provider_name>/<string:env>/vip/<string:identifier>",
