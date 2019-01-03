@@ -4,6 +4,26 @@ from vip_provider.credentials.base import CredentialBase, CredentialAdd
 class CredentialAWS(CredentialBase):
 
     @property
+    def health_check_interval_seconds(self):
+        return self.content['health_check_interval_seconds']
+
+    @property
+    def health_check_path(self):
+        return self.content['health_check_path']
+
+    @property
+    def health_check_port(self):
+        return self.content['health_check_port']
+
+    @property
+    def health_check_protocol(self):
+        return self.content['health_check_protocol']
+
+    @property
+    def health_check_timeout_seconds(self):
+        return self.content['health_check_timeout_seconds']
+
+    @property
     def access_id(self):
         return self.content['access_id']
 

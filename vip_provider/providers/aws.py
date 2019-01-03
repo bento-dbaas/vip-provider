@@ -92,11 +92,11 @@ class ProviderAWS(ProviderBase):
         self.waiting_be_available(new_balancer)
 
         healthcheck_config = {
-            'HealthCheckIntervalSeconds': 10,
-            'HealthCheckPath': '/health-check/foxha/',
-            'HealthCheckPort': 80,
-            'HealthCheckProtocol': 'HTTP',
-            'HealthCheckTimeoutSeconds': 6
+            'HealthCheckIntervalSeconds': self.credential.health_check_interval_seconds,
+            'HealthCheckPath': self.credential.health_check_path,
+            'HealthCheckPort': self.credential.health_check_port,
+            'HealthCheckProtocol': self.credential.health_check_protocol,
+            'HealthCheckTimeoutSeconds': self.credential.health_check_timeout_seconds
         }
         new_target_group = self.client.create_target_group(
             name='tg-{}'.format(vip.group),
