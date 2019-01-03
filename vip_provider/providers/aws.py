@@ -116,7 +116,8 @@ class ProviderAWS(ProviderBase):
             port=3306
         )
         vip.vip_id = new_balancer.id
-        vip.vip_ip = self.dns2ip(new_balancer.ip)
+        # vip.vip_ip = self.dns2ip(new_balancer.ip)
+        vip.vip_ip = new_balancer.ip
         vip.target_group_id = new_target_group.id
 
     def _delete_vip(self, vip_obj):
