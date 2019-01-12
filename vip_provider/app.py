@@ -115,6 +115,8 @@ def create_vip(provider_name, env):
     data = request.get_json()
     group = data.get("group", None)
     port = data.get("port", None)
+    vip_dns = data.get("vip_dns", None)
+    equipments = data.get("equipments", None)
 
     if not(group and port):
         return response_invalid_request("Invalid data {}".format(data))
@@ -122,7 +124,7 @@ def create_vip(provider_name, env):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
-        vip = provider.create_vip(group, port)
+        vip = provider.create_vip(group, port, equipments, vip_dns)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
