@@ -84,6 +84,9 @@ class ProviderAWS(ProviderBase):
         return self.client.get_target_healthy(vip.target_group_id)
 
     def _create_vip(self, vip):
+
+        self.credential.before_create_vip()
+
         new_balancer = self.client.create_balancer(
             name=vip.group,
             port=vip.port,
@@ -119,6 +122,8 @@ class ProviderAWS(ProviderBase):
         # vip.vip_ip = self.dns2ip(new_balancer.ip)
         vip.vip_ip = new_balancer.ip
         vip.target_group_id = new_target_group.id
+
+        self.credential.after_create_vip()
 
     def _delete_vip(self, vip_obj):
         balancer = self.client.get_balancer(vip_obj.vip_id)

@@ -51,13 +51,13 @@ class ProviderBase(object):
     def get_credential_add(self):
         raise NotImplementedError
 
-    def create_vip(self, group, port):
+    def create_vip(self, group, port, equipments, vip_dns):
         vip = Vip()
         vip.port = port
         vip.group = group
-        self.credential.before_create_vip()
+        vip.equipments = equipments
+        vip.vip_dns = vip_dns
         self._create_vip(vip)
-        self.credential.after_create_vip()
         vip.save()
 
         return vip
