@@ -1,3 +1,4 @@
+requests==2.4.3
 apache-libcloud==2.4.0
 Flask==1.0.2
 Flask-Cors==3.0.6
@@ -7,3 +8,4 @@ gunicorn==19.9.0
 mongoengine==0.15.0
 pymongo==3.6.1
 dnspython==1.15.0
+GloboNetworkAPI==0.6.23
