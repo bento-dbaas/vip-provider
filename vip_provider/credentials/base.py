@@ -51,7 +51,7 @@ class CredentialBase(CredentialMongoDB):
         return super(CredentialBase, self).content
 
     def get_by(self, **kwargs):
-        return self.credential.find({'provider': self.provider, **kwargs})
+        return self.credential.find(dict(provider=self.provider, **kwargs))
 
     def all(self, **kwargs):
         return self.get_by()
@@ -133,11 +133,11 @@ class CredentialAdd(CredentialMongoDB):
                 'provider': self.provider,
                 'environment': self.environment
             },
-            {'$set': {
-                'provider': self.provider,
-                'environment': self.environment,
+            {'$set': dict(
+                provider=self.provider,
+                environment=self.environment,
                 **self.content
-            }},
+            )},
             upsert=True,
             return_document=ReturnDocument.AFTER
         )
