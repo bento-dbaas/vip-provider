@@ -12,6 +12,15 @@ class CredentialMongoDB(object):
         self._content = None
         self._zone = None
 
+    def __getattribute__(self, name):
+        try:
+            attr = object.__getattribute__(self, name)
+        except AttributeError, e:
+            attr = self.content.get(name)
+            if attr is None:
+                raise AttributeError(e)
+        return attr
+
     @property
     def db(self):
         if not self._db:
