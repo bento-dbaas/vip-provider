@@ -28,4 +28,6 @@ class Vip(Document):
             'vip_id': self.vip_id,
             'vip_ip': self.vip_ip,
             'dscp': self.dscp,
+            'pool_id': self.pool_id,
+            'target_group_id': self.target_group_id
         }
