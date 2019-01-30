@@ -30,7 +30,6 @@ class ProviderAWS(ProviderBase):
             self.credential.access_id,
             self.credential.secret_key,
             region=self.credential.region,
-            **{'proxy_url': AWS_PROXY} if AWS_PROXY else {}
         )
 
         if AWS_PROXY:
