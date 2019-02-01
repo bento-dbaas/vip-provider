@@ -62,6 +62,12 @@ class ProviderBase(object):
 
         return vip
 
+    def update_vip_reals(self, *args, **kw):
+        return self._update_vip_reals(*args, **kw)
+
+    def _update_vip_reals(self, *args, **kw):
+        raise NotImplementedError
+
     def _create_vip(self, vip):
         raise NotImplementedError
 

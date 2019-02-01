@@ -3,6 +3,7 @@ from vip_provider.credentials.networkapi import CredentialNetworkAPI
 from vip_provider.credentials.networkapi import CredentialAddNetworkAPI
 from networkapiclient.ClientFactory import ClientFactory
 from networkapiclient.exception import NetworkAPIClientError
+from vip_provider.models import Vip
 
 #from networkapiclient.ClientFactory import ClientFactory
 #from networkapiclient.exception import NetworkAPIClientError
@@ -18,6 +19,7 @@ class ProviderNetworkAPI(ProviderBase):
         self.vip_api = self.client.create_api_environment_vip()
         self.vip_api_request = self.client.create_api_vip_request()
         self.pool_api = self.client.create_pool()
+        self.pool_deploy = self.client.create_api_pool_deploy()
 
     @classmethod
     def get_provider(cls):
@@ -138,6 +140,15 @@ class ProviderNetworkAPI(ProviderBase):
         vip.pool_id = str(pool_id)
         vip.vip_ip = self.get_vip_ip(vip_id)
         vip.dscp = self.get_dscp(vip_id)
+
+    def _update_vip_reals(self, vip_reals, identifier):
+        vip = Vip.objects(id=identifier).get()
+        vip.equipments = vip_reals
+        pool_data = self.get_create_pull_data(vip=vip)
+        pool = self.pool_api.get_pool(vip.pool_id)['server_pools'][0]
+        pool['server_pool_members'] = pool_data['server_pool_members']
+        self.pool_deploy.update([pool])
+        return vip
 
     def build_credential(self):
         return CredentialNetworkAPI(self.provider, self.environment)

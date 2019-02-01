@@ -131,6 +131,25 @@ def create_vip(provider_name, env):
     return response_created(identifier=str(vip.id), ip=vip.vip_ip)
 
 
+@app.route("/<string:provider_name>/<string:env>/vip/<string:identifier>/reals", methods=['PUT'])
+@auth.login_required
+def update_vip_reals(provider_name, env, identifier):
+    data = request.get_json()
+    vip_reals = data.get("vip_reals", None)
+
+    if not(vip_reals):
+        return response_invalid_request("Invalid data {}".format(data))
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        vip = provider.update_vip_reals(vip_reals, identifier)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+    return response_ok(identifier=str(vip.id), ip=vip.vip_ip)
+
+
 @app.route("/<string:provider_name>/<string:env>/vip/register_target", methods=['POST'])
 @auth.login_required
 def register_target(provider_name, env):
