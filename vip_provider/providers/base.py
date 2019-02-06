@@ -62,6 +62,18 @@ class ProviderBase(object):
 
         return vip
 
+    def add_real(self, *args, **kw):
+        return self._add_real(*args, **kw)
+
+    def _add_real(self, *args, **kw):
+        raise NotImplemented()
+
+    def remove_real(self, *args, **kw):
+        return self._remove_real(*args, **kw)
+
+    def _remove_real(self, *args, **kw):
+        raise NotImplemented()
+
     def update_vip_reals(self, *args, **kw):
         return self._update_vip_reals(*args, **kw)
 

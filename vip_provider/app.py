@@ -150,29 +150,36 @@ def update_vip_reals(provider_name, env, identifier):
     return response_ok(identifier=str(vip.id), ip=vip.vip_ip)
 
 
-@app.route("/<string:provider_name>/<string:env>/vip/register_target", methods=['POST'])
+@app.route("/<string:provider_name>/<string:env>/vip/<string:vip_id>/reals", methods=['POST'])
 @auth.login_required
-def register_target(provider_name, env):
+def add_vip_real(provider_name, env, vip_id):
     data = request.get_json()
-    instance_id = data.get("instance_id", None)
+    real_id = data.get("real_id", None)
     port = data.get("port", None)
-    vip_id = data.get("vip_id", None)
-    zone_id = data.get("zone_id", None)
 
-    if not(instance_id and port and vip_id):
+    if not(real_id and port and vip_id):
         return response_invalid_request("Invalid data {}".format(data))
 
-    try:
-        provider_cls = get_provider_to(provider_name)
-        provider = provider_cls(env)
-        vip = Vip.objects(id=vip_id).get()
-        vip = provider.register_targets(vip.vip_id, vip.target_group_id, zone_id, [
-            {'id': instance_id, 'port': port}
-        ])
-    except Exception as e:  # TODO What can get wrong here?
-        print_exc()  # TODO Improve log
-        return response_invalid_request(str(e))
-    return response_ok()
+    return _vip_real_action(
+        'add_real',
+        provider_name,
+        env,
+        vip_id,
+        real_id,
+        **{'port': port}
+    )
+
+
+@app.route("/<string:provider_name>/<string:env>/vip/<string:vip_id>/reals/<string:real_id>", methods=['DELETE'])
+@auth.login_required
+def remove_vip_real(provider_name, env, vip_id, real_id):
+    return _vip_real_action(
+        'remove_real',
+        provider_name,
+        env,
+        vip_id,
+        real_id
+    )
 
 
 @app.route("/<string:provider_name>/<string:env>/vip/healthy", methods=['POST'])
@@ -252,3 +259,16 @@ def response_ok(**kwargs):
 def _response(status, **kwargs):
     content = jsonify(**kwargs)
     return make_response(content, status)
+
+def _vip_real_action(action, provider_name, env, vip_id, real_id, **kw):
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        vip = Vip.objects(id=vip_id).get()
+        provider_action = getattr(provider, action)
+        vip = provider_action(vip.target_group_id, real_id=real_id, **kw)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+    return response_ok()

@@ -76,8 +76,15 @@ class ProviderAWS(ProviderBase):
 
         return False
 
-    def register_targets(self, balancer_id, target_group_id, zone_id, instances):
-        self.client.register_targets(target_group_id, instances)
+    def _add_real(self, target_group_id, real_id, port):
+        self.client.register_targets(target_group_id, [{
+            'id': real_id, 'port': port
+        }])
+
+    def _remove_real(self, target_group_id, real_id):
+        self.client.deregister_targets(target_group_id, [{
+            'id': real_id
+        }])
 
     def get_vip_healthy(self, vip):
         return self.client.get_target_healthy(vip.target_group_id)
