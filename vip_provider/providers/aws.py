@@ -10,6 +10,8 @@ from vip_provider.clients.team import TeamClient
 from vip_provider.drivers.aws import NetworkLBDriver
 from dns.resolver import Resolver
 from dns.exception import DNSException
+from vip_provider.models import Vip
+
 
 
 STATE_AVAILABLE = 'active'
@@ -75,6 +77,16 @@ class ProviderAWS(ProviderBase):
             sleep(wait)
 
         return False
+
+    def _update_vip_reals(self, vip_reals, identifier):
+        vip = Vip.objects(id=identifier).get()
+        for real in vip_reals:
+            self._add_real(
+                vip.target_group_id,
+                real.get('identifier'),
+                real.get('port')
+            )
+        return vip
 
     def _add_real(self, target_group_id, real_id, port):
         self.client.register_targets(target_group_id, [{
