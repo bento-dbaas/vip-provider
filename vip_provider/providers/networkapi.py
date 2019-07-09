@@ -38,7 +38,7 @@ class ProviderNetworkAPI(ProviderBase):
                 "destination": self.credential.destination,
                 "healthcheck_expect": self.credential.healthcheck_expect,
                 "identifier": "",
-                "healthcheck_request": self.credential.healthcheck_request
+                "healthcheck_request": self.credential.healthcheck_request.format(vip.group)
             },
             "default_limit": int(self.credential.limit),
             "identifier": 'DBaaS_{}'.format(vip.group)
