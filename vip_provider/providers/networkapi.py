@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from vip_provider.providers.base import ProviderBase
 from vip_provider.credentials.networkapi import CredentialNetworkAPI
 from vip_provider.credentials.networkapi import CredentialAddNetworkAPI
