@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 from traceback import print_exc
 from bson import json_util

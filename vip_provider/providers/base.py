@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from vip_provider.models import Vip
 
 

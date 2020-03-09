@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from collections import namedtuple
 from time import sleep
 from traceback import print_exc
