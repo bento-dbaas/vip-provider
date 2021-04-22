@@ -15,7 +15,7 @@ class CredentialMongoDB(object):
     def __getattribute__(self, name):
         try:
             attr = object.__getattribute__(self, name)
-        except AttributeError, e:
+        except AttributeError as e:
             attr = self.content.get(name)
             if attr is None:
                 raise AttributeError(e)
@@ -78,10 +78,10 @@ class CredentialBase(CredentialMongoDB):
     def __get_zones(self, **filters):
         all_zones = self._zones_field
         filtered_zones = {}
-        for zone_key in all_zones.keys():
+        for zone_key in list(all_zones.keys()):
             zone_val = all_zones[zone_key]
             valid = True
-            for key, value in filters.items():
+            for key, value in list(filters.items()):
                 if zone_val[key] != value:
                     valid = False
                     break
@@ -162,7 +162,7 @@ class CredentialAdd(CredentialMongoDB):
 
     def is_valid(self):
         error = "Required fields {}".format(self.valid_fields)
-        if len(self.valid_fields) != len(self.content.keys()):
+        if len(self.valid_fields) != len(list(self.content.keys())):
             return False, error
 
         for field in self.valid_fields:

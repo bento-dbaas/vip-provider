@@ -14,7 +14,7 @@ class TeamClient(object):
     @staticmethod
     def get_by_name(name):
         res = requests.get(
-            u'{}/{}'.format(TEAM_API_URL, name)
+            '{}/{}'.format(TEAM_API_URL, name)
         )
 
         if res.ok:
