@@ -1,56 +1,19 @@
 # -*- coding: utf-8 -*-
 from vip_provider.models import Vip
 
+from dbaas_base_provider.baseProvider import BaseProvider
 
-class ProviderBase(object):
 
-    def __init__(self, environment):
-        self.environment = environment
-        self._client = None
-        self._credential = None
+class ProviderBase(BaseProvider):
 
-    @property
-    def client(self):
-        if not self._client:
-            self._client = self.build_client()
-        return self._client
+    provider_type = "vip_provider"
 
-    @property
-    def credential(self):
-        if not self._credential:
-            self._credential = self.build_credential()
-        return self._credential
-
-    def credential_add(self, content):
-        credential_cls = self.get_credential_add()
-        credential = credential_cls(self.provider, self.environment, content)
-        is_valid, error = credential.is_valid()
-        if not is_valid:
-            return False, error
-
-        try:
-            insert = credential.save()
-        except Exception as e:
-            return False, str(e)
-        else:
-            return True, insert.get('_id')
-
-    @property
-    def provider(self):
-        return self.get_provider()
-
-    @classmethod
-    def get_provider(cls):
-        raise NotImplementedError
-
-    def build_client(self):
-        raise NotImplementedError
-
-    def build_credential(self):
-        raise NotImplementedError
-
-    def get_credential_add(self):
-        raise NotImplementedError
+    def __init__(self, environment, engine=None, auth_info=None):
+        super(ProviderBase, self).__init__(
+            environment,
+            engine=engine,
+            auth_info=None
+        )
 
     def create_vip(self, group, port, equipments, vip_dns):
         vip = Vip()
@@ -67,13 +30,13 @@ class ProviderBase(object):
         return self._add_real(*args, **kw)
 
     def _add_real(self, *args, **kw):
-        raise NotImplemented()
+        raise NotImplementedError
 
     def remove_real(self, *args, **kw):
         return self._remove_real(*args, **kw)
 
     def _remove_real(self, *args, **kw):
-        raise NotImplemented()
+        raise NotImplementedError
 
     def update_vip_reals(self, *args, **kw):
         return self._update_vip_reals(*args, **kw)

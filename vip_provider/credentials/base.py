@@ -1,45 +1,27 @@
 from pymongo import MongoClient, ReturnDocument
 from vip_provider.settings import MONGODB_PARAMS, MONGODB_DB
 
+from dbaas_base_provider.baseCredential import BaseCredential
 
-class CredentialMongoDB(object):
+
+class CredentialMongoDB(BaseCredential):
+
+    provider_type = "vip_provider"
 
     def __init__(self, provider, environment):
-        self.provider = provider
-        self.environment = environment
-        self._db = None
-        self._collection_credential = None
-        self._content = None
-        self._zone = None
-
-    def __getattribute__(self, name):
-        try:
-            attr = object.__getattribute__(self, name)
-        except AttributeError, e:
-            attr = self.content.get(name)
-            if attr is None:
-                raise AttributeError(e)
-        return attr
-
-    @property
-    def db(self):
-        if not self._db:
-            client = MongoClient(**MONGODB_PARAMS)
-            self._db = client[MONGODB_DB]
-        return self._db
-
-    @property
-    def credential(self):
-        if not self._collection_credential:
-            self._collection_credential = self.db["credentials"]
-        return self._collection_credential
-
-    @property
-    def content(self):
-        return self._content
+        super(CredentialMongoDB, self).__init__(
+            provider,
+            environment
+        )
+        self.MONGODB_PARAMS = MONGODB_PARAMS
+        self.MONGODB_DB = MONGODB_DB
 
 
 class CredentialBase(CredentialMongoDB):
+
+    def __init__(self, provider, environment, engine=None):
+        super(CredentialBase, self).__init__(provider, environment)
+        self.engine = engine
 
     def get_content(self):
         content = self.credential.find_one({
@@ -129,9 +111,7 @@ class CredentialBase(CredentialMongoDB):
         return zones[next_index]
 
 
-
 class CredentialAdd(CredentialMongoDB):
-
     def __init__(self, provider, environment, content):
         super(CredentialAdd, self).__init__(provider, environment)
         self._content = content

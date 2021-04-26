@@ -10,4 +10,4 @@ pymongo==3.6.1
 dnspython==1.15.0
 GloboNetworkAPI==0.8.18
 ipython==5.8.0
-dbaas-base-provider>=0.0.6
+dbaas-base-provider>=0.0.7
