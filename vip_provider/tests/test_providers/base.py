@@ -115,4 +115,3 @@ class TestBaseProvider(TestCase):
             self.assertIsInstance(inserted_id, str)
             self.assertNotIn(full_data, FakeMongoDB.metadata)
             self.assertEqual(FakeMongoDB.ids[-1], latest)
-
