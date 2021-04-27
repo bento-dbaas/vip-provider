@@ -9,3 +9,9 @@ deploy_dev:
 
 deploy_prod:
 	tsuru app-deploy -a vip-provider .
+
+test:
+	export DBAAS_HTTP_PROXY=; export DBAAS_HTTPS_PROXY=;coverage run --source=./ -m unittest discover --start-directory ./vip_provider/tests -p "*.py"
+
+test_report: test
+	coverage report -m
