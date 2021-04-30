@@ -3,8 +3,10 @@ from mock import patch
 from vip_provider.settings import MONGODB_HOST, MONGODB_PORT, MONGODB_USER, \
     MONGODB_PWD
 from vip_provider.credentials.base import CredentialAdd, CredentialBase
-from vip_provider.tests.test_credentials import CredentialAddFake, CredentialBaseFake, \
-    FakeMongoDB
+from vip_provider.tests.test_credentials import (
+    CredentialAddFake,
+    CredentialBaseFake,
+    FakeMongoDB)
 
 
 PROVIDER = "fake"
