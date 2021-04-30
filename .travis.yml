@@ -1,0 +1,14 @@
+language: python
+python:
+  - 2.7.14
+services:
+  - mongodb
+script:
+  - make test_report
+install:
+  - pip install -r requirements_test.txt
+notifications:
+  email: false
+cache: false
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
