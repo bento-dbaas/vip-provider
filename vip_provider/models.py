@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from mongoengine import Document, StringField, IntField, ReferenceField, CASCADE
+from mongoengine import (Document, StringField,
+                         IntField, ReferenceField, CASCADE)
 
 
 class Vip(Document):
@@ -7,9 +8,17 @@ class Vip(Document):
     group = StringField(max_length=50, required=True)
     vip_id = StringField(max_length=300, required=True)
     vip_ip = StringField(required=True)
-    pool_id = StringField(required=False)
+    pool_id = StringField(required=False)  # (GCP - instance group)
     target_group_id = StringField(required=False)
     dscp = IntField(required=False)
+
+    # GCP specific fields
+    healthcheck = StringField(max_length=50, required=False)
+    backend_service = StringField(max_length=50, required=False)
+    url_map = StringField(max_length=50, required=False)
+    named_ports = StringField(max_length=50, required=False)
+    target_proxy = StringField(max_length=50, required=False)
+    forwarding_rule = StringField(max_length=50, required=False)
 
     # def set_group(self, group):
     #     self.group = group
