@@ -132,6 +132,29 @@ def create_vip(provider_name, env):
     return response_created(identifier=str(vip.id), ip=vip.vip_ip)
 
 
+@app.route("/<string:provider_name>/<string:env>/instance-group", 
+           methods=['POST'])
+@auth.login_required
+def create_instance_group(provider_name, env):
+    data = request.get_json()
+    group = data.get("group", None)
+    port = data.get("port", None)
+    vip_dns = data.get("vip_dns", None)
+
+
+    if not(group and port):
+        return response_invalid_request("Invalid data {}".format(data))
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        vip = provider.create_instance_group(group, port, vip_dns)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+    return response_created(identifier=str(vip.id), ip=vip.vip_ip)
+
+
 @app.route("/<string:provider_name>/<string:env>/vip/<string:identifier>/reals", methods=['PUT'])
 @auth.login_required
 def update_vip_reals(provider_name, env, identifier):
