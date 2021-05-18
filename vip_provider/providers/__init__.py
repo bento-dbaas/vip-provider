@@ -1,6 +1,7 @@
 from vip_provider.providers.base import ProviderBase
 from vip_provider.providers.aws import ProviderAWS
 from vip_provider.providers.networkapi import ProviderNetworkAPI
+from vip_provider.providers.gce import ProviderGce
 
 
 def get_provider_to(provider_name):

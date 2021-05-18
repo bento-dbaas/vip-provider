@@ -14,7 +14,6 @@ from dns.exception import DNSException
 from vip_provider.models import Vip
 
 
-
 STATE_AVAILABLE = 'active'
 STATE_INUSE = 'inuse'
 ATTEMPTS = 60
