@@ -153,6 +153,24 @@ def create_instance_group(provider_name, env):
         return response_invalid_request(str(e))
     return response_created(identifier=str(vip.id))
 
+@app.route("/<string:provider_name>/<string:env>/add-instance-group/<string:vip>", 
+           methods=['POST'])
+@auth.login_required
+def add_instance_in_group(provider_name, env, vip):
+    data = request.get_json()
+    equipments = data.get("equipments", None)
+
+    if not(equipments):
+        return response_invalid_request("Invalid data {}".format(data))
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        vip = provider.add_instance_in_group(equipments, vip)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+    return response_ok()
+
 
 @app.route("/<string:provider_name>/<string:env>/vip/<string:identifier>/reals", methods=['PUT'])
 @auth.login_required
