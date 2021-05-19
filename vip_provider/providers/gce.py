@@ -91,3 +91,35 @@ class ProviderGce(ProviderBase):
 
         vip.vip_id = vip.group
         return groups
+
+    def _add_instance_in_group(self, equipments, vip):
+        for eq in equipments:
+            zone = eq.get('zone')
+            instance_uri = "projects/{}/zones/{}/instances/{}".format(
+                self.credential.project,
+                zone,
+                eq.get('name')
+            )
+
+            instances = {
+                "instances": [
+                    {'instance': instance_uri},
+                ]
+            }
+
+            add_inst = self.client.instanceGroups().addInstances(
+                project=self.credential.project,
+                zone=zone,
+                instanceGroup=self.__get_instance_group_name(
+                    eq.get('group'),
+                    zone
+                ),
+                body=instances
+            ).execute()
+
+            self.wait_operation(
+                zone=zone,
+                operation=add_inst.get('name')
+            )
+
+        return True

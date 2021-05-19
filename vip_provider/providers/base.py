@@ -33,11 +33,15 @@ class ProviderBase(BaseProvider):
         vip.vip_dns = vip_dns
         vip.instance_groups = self._create_instance_group(
             vip, equipments)
-        
+
         vip.vip_ip = ""
         vip.save()
 
         return vip
+
+    def add_instance_in_group(self, equipments, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        self._add_instance_in_group(equipments, vip_obj)
 
     def add_real(self, *args, **kw):
         return self._add_real(*args, **kw)
@@ -61,6 +65,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _create_instance_group(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def _add_instance_in_group(self, *args, **kwargs):
         raise NotImplementedError
 
     def delete_vip(self, identifier):
