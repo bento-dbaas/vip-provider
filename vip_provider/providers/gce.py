@@ -59,6 +59,35 @@ class ProviderGce(ProviderBase):
             self.provider, self.environment
         )
 
-    def _create_instance_group(self, vip):
-        ig = self.client.instanceGroups()
-        print(ig)
+    def __get_instance_group_name(self, group, zone):
+        return "%s-%s" % (
+            group,
+            zone
+        )
+
+    def _create_instance_group(self, vip, equipments):
+        '''create one group to each zone'''
+        groups = []
+        for eq in equipments:
+            zone = eq.get("zone", None)
+            group_name = self.__get_instance_group_name(
+                vip.group,
+                zone
+            )
+            if group_name not in groups:
+                conf = {"name": group_name}
+                ig = self.client.instanceGroups().insert(
+                    project=self.credential.project,
+                    zone=zone,
+                    body=conf
+                ).execute()
+
+                self.wait_operation(
+                    zone=zone,
+                    operation=ig.get('name')
+                )
+
+                groups.append(group_name)
+
+        vip.vip_id = vip.group
+        return groups

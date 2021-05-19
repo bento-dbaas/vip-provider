@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from mongoengine import (Document, StringField,
+from mongoengine import (Document, StringField, ListField,
                          IntField, ReferenceField, CASCADE)
 
 
@@ -8,11 +8,12 @@ class Vip(Document):
     group = StringField(max_length=50, required=True)
     vip_id = StringField(max_length=300, required=True)
     vip_ip = StringField(required=True)
-    pool_id = StringField(required=False)  # (GCP - instance group)
+    pool_id = StringField(required=False)  
     target_group_id = StringField(required=False)
     dscp = IntField(required=False)
 
     # GCP specific fields
+    instance_groups = ListField(required=False)
     healthcheck = StringField(max_length=50, required=False)
     backend_service = StringField(max_length=50, required=False)
     url_map = StringField(max_length=50, required=False)

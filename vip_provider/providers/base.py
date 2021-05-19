@@ -26,13 +26,16 @@ class ProviderBase(BaseProvider):
 
         return vip
 
-    def create_instance_group(self, group, port, vip_dns):
+    def create_instance_group(self, group, port, vip_dns, equipments):
         vip = Vip()
         vip.port = port
         vip.group = group
         vip.vip_dns = vip_dns
-        self._create_instance_group(vip)
-        #vip.save()
+        vip.instance_groups = self._create_instance_group(
+            vip, equipments)
+        
+        vip.vip_ip = ""
+        vip.save()
 
         return vip
 
@@ -57,7 +60,7 @@ class ProviderBase(BaseProvider):
     def _create_vip(self, vip):
         raise NotImplementedError
 
-    def _create_instance_group(self, vip):
+    def _create_instance_group(self, *args, **kwargs):
         raise NotImplementedError
 
     def delete_vip(self, identifier):
