@@ -13,7 +13,6 @@ class Vip(Document):
     dscp = IntField(required=False)
 
     # GCP specific fields
-    instance_groups = ListField(required=False)
     healthcheck = StringField(max_length=50, required=False)
     backend_service = StringField(max_length=50, required=False)
     url_map = StringField(max_length=50, required=False)
@@ -41,4 +40,20 @@ class Vip(Document):
             'dscp': self.dscp,
             'pool_id': self.pool_id,
             'target_group_id': self.target_group_id
+        }
+
+
+class InstanceGroup(Document):
+    vip = ReferenceField(Vip, required=True, reverse_delete_rule=CASCADE)
+    name = StringField(required=True, max_length=60)
+
+    @property
+    def uuid(self):
+        return str(self.pk)
+
+    def to_json(self):
+        return {
+            'id': self._id,
+            'vip': self.vip,
+            'name': self.name
         }

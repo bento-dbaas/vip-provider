@@ -151,7 +151,9 @@ def create_instance_group(provider_name, env):
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    return response_created(identifier=str(vip.id))
+    return response_created(
+        vip_identifier=str(vip[0].id),
+        group_identifier=[str(x.id) for x in vip[1]])
 
 @app.route("/<string:provider_name>/<string:env>/add-instance-group/<string:vip>", 
            methods=['POST'])
