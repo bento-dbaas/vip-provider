@@ -31,13 +31,17 @@ class ProviderBase(BaseProvider):
         vip.port = port
         vip.group = group
         vip.vip_dns = vip_dns
-        vip.instance_groups = self._create_instance_group(
+        instance_groups = self._create_instance_group(
             vip, equipments)
 
         vip.vip_ip = ""
         vip.save()
 
-        return vip
+        for ig in instance_groups:
+            ig.vip = vip
+            ig.save()
+
+        return vip, instance_groups
 
     def add_instance_in_group(self, equipments, vip):
         vip_obj = Vip.objects(pk=vip).get()

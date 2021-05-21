@@ -6,6 +6,8 @@ from vip_provider.settings import HTTP_PROXY
 import googleapiclient.discovery
 from google.oauth2 import service_account
 
+from vip_provider.models import InstanceGroup
+
 class ProviderGce(ProviderBase):
 
     @classmethod
@@ -75,8 +77,9 @@ class ProviderGce(ProviderBase):
                 zone
             )
             if group_name not in groups:
+                ig = InstanceGroup()
                 conf = {"name": group_name}
-                ig = self.client.instanceGroups().insert(
+                add_ig = self.client.instanceGroups().insert(
                     project=self.credential.project,
                     zone=zone,
                     body=conf
@@ -84,12 +87,14 @@ class ProviderGce(ProviderBase):
 
                 self.wait_operation(
                     zone=zone,
-                    operation=ig.get('name')
+                    operation=add_ig.get('name')
                 )
 
-                groups.append(group_name)
+                ig.name = group_name
+                groups.append(ig)
 
         vip.vip_id = vip.group
+
         return groups
 
     def _add_instance_in_group(self, equipments, vip):
