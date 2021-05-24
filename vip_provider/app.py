@@ -178,6 +178,20 @@ def add_instance_in_group(provider_name, env, vip):
     return response_ok()
 
 
+@app.route(("/<string:provider_name>/<string:env>"
+            "/healthcheck/<string:vip>"),
+           methods=['POST'])
+@auth.login_required
+def create_healthcheck(provider_name, env, vip):
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        hc = provider.create_healthcheck(vip)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+    return response_created(name=hc)
+
 @app.route(("/<string:provider_name>/<string:env>/"
             "vip/<string:identifier>/reals"), methods=['PUT'])
 @auth.login_required

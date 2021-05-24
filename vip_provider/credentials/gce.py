@@ -11,6 +11,10 @@ class CredentialGce(CredentialBase):
     def scopes(self):
         return self.content['scopes']
 
+    @property
+    def region(self):
+        return self.content['region']
+
 
 class CredentialAddGce(CredentialAdd):
 

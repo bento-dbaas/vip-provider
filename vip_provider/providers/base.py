@@ -45,7 +45,15 @@ class ProviderBase(BaseProvider):
 
     def add_instance_in_group(self, equipments, vip):
         vip_obj = Vip.objects(pk=vip).get()
-        self._add_instance_in_group(equipments, vip_obj)
+        return self._add_instance_in_group(equipments, vip_obj)
+
+    def create_healthcheck(self, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        hc_name = self._create_healthcheck(vip_obj)
+
+        vip_obj.healthcheck = hc_name
+
+        return hc_name
 
     def add_real(self, *args, **kw):
         return self._add_real(*args, **kw)
@@ -72,6 +80,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _add_instance_in_group(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def _create_healthcheck(self, vip):
         raise NotImplementedError
 
     def delete_vip(self, identifier):
