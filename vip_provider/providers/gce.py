@@ -130,3 +130,40 @@ class ProviderGce(ProviderBase):
             )
 
         return True
+
+    def _create_healthcheck(self, vip):
+        hc_name = "hc-%s" % vip.group
+        # create healthcheck
+        conf = {
+            "checkIntervalSec": 5,
+            "description": "",
+            "healthyThreshold": 2,
+            "httpHealthCheck": {
+                "host": "",
+                "port": 80,
+                "proxyHeader": "NONE",
+                "requestPath": "/health-check/",
+                "response": "WORKING"
+            },
+            "logConfig": {
+                "enable": False
+            },
+            "name": hc_name,
+            "timeoutSec": 5,
+            "region": 'southamerica-east1',
+            "type": "HTTP",
+            "unhealthyThreshold": 2
+        }
+
+        hc = self.client.regionHealthChecks().insert(
+            project=self.credential.project,
+            region=self.credential.region,
+            body=conf
+        ).execute()
+
+        self.wait_operation(
+            region=self.credential.region,
+            operation=hc.get('name')
+        )
+
+        return hc_name
