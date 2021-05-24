@@ -72,6 +72,7 @@ class ProviderGce(ProviderBase):
         groups = []
         for eq in equipments:
             zone = eq.get("zone", None)
+            eq_id = eq.get("identifier", None)
             group_name = self.__get_instance_group_name(
                 vip.group,
                 zone
@@ -91,6 +92,7 @@ class ProviderGce(ProviderBase):
                 )
 
                 ig.name = group_name
+                ig.zone = zone
                 groups.append(ig)
 
         vip.vip_id = vip.group

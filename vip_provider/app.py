@@ -153,7 +153,9 @@ def create_instance_group(provider_name, env):
         return response_invalid_request(str(e))
     return response_created(
         vip_identifier=str(vip[0].id),
-        group_identifier=[str(x.id) for x in vip[1]])
+        groups=[
+            {'identifier': str(x.id),
+             'name': x.name} for x in vip[1]])
 
 @app.route("/<string:provider_name>/<string:env>/add-instance-group/<string:vip>", 
            methods=['POST'])
