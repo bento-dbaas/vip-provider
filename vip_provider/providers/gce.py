@@ -8,12 +8,12 @@ from google.oauth2 import service_account
 
 from vip_provider.models import InstanceGroup
 
+
 class ProviderGce(ProviderBase):
 
     @classmethod
     def get_provider(cls):
         return 'gce'
-
 
     def build_client(self):
         service_account_data = self.credential.content['service_account']
