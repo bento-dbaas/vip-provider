@@ -8,7 +8,7 @@ class Vip(Document):
     group = StringField(max_length=50, required=True)
     vip_id = StringField(max_length=300, required=True)
     vip_ip = StringField(required=True)
-    pool_id = StringField(required=False)  
+    pool_id = StringField(required=False)
     target_group_id = StringField(required=False)
     dscp = IntField(required=False)
 
@@ -47,6 +47,7 @@ class InstanceGroup(Document):
     vip = ReferenceField(Vip, required=True, reverse_delete_rule=CASCADE)
     name = StringField(required=True, max_length=60)
     zone = StringField(required=True, max_length=50)
+
     @property
     def uuid(self):
         return str(self.pk)

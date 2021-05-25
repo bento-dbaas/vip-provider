@@ -133,7 +133,6 @@ class ProviderGce(ProviderBase):
 
     def _create_healthcheck(self, vip):
         hc_name = "hc-%s" % vip.group
-        # create healthcheck
         conf = {
             "checkIntervalSec": 5,
             "description": "",
@@ -167,3 +166,39 @@ class ProviderGce(ProviderBase):
         )
 
         return hc_name
+
+    def _create_backend_service(self, vip):
+        bs_name = "bs-%s" % vip.group
+        healthcheck_uri = "regions/%s/healthChecks/%s" % (
+            self.credential.region,
+            vip.healthcheck
+        )
+
+        instance_group_uri = []
+        for ig in InstanceGroup.objects.filter(vip=vip):
+            uri = "zones/%s/instanceGroups/%s" % (
+                ig.zone,
+                ig.name
+            )
+            instance_group_uri.append(uri)
+
+        conf = {
+            "name": bs_name,
+            "backends": [{'group': x} for x in instance_group_uri],
+            "loadBalancingScheme": "INTERNAL_MANAGED",
+            "healthChecks": [healthcheck_uri],
+            "protocol": "HTTP"
+        }
+
+        bs = self.client.regionBackendServices().insert(
+            project=self.credential.project,
+            region=self.credential.region,
+            body=conf
+        ).execute()
+
+        self.wait_operation(
+            region=self.credential.region,
+            operation=bs.get('name')
+        )
+
+        return bs_name
