@@ -53,7 +53,16 @@ class ProviderBase(BaseProvider):
 
         vip_obj.healthcheck = hc_name
 
+        vip_obj.save()
         return hc_name
+
+    def create_backend_service(self, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        bc_name = self._create_backend_service(vip_obj)
+
+        vip_obj.backend_service = bc_name
+        vip_obj.save()
+        return bc_name
 
     def add_real(self, *args, **kw):
         return self._add_real(*args, **kw)
@@ -83,6 +92,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _create_healthcheck(self, vip):
+        raise NotImplementedError
+
+    def _create_backend_service(self, vip):
         raise NotImplementedError
 
     def delete_vip(self, identifier):
