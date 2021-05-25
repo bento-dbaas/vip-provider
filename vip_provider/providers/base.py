@@ -64,6 +64,14 @@ class ProviderBase(BaseProvider):
         vip_obj.save()
         return bc_name
 
+    def create_url_map(self, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        um_name = self._create_url_map(vip_obj)
+
+        vip_obj.url_map = um_name
+        vip_obj.save()
+        return um_name
+
     def add_real(self, *args, **kw):
         return self._add_real(*args, **kw)
 
@@ -95,6 +103,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _create_backend_service(self, vip):
+        raise NotImplementedError
+
+    def _create_url_map(self, vip):
         raise NotImplementedError
 
     def delete_vip(self, identifier):

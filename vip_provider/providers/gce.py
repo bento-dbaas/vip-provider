@@ -202,3 +202,28 @@ class ProviderGce(ProviderBase):
         )
 
         return bs_name
+
+    def _create_url_map(self, vip):
+        um_name = "um-%s" % vip.group
+        backend_service_uri = "regions/%s/backendServices/%s" % (
+            self.credential.region,
+            vip.backend_service
+        )
+
+        conf = {
+            "name": um_name,
+            "defaultService": backend_service_uri
+        }
+
+        um = self.client.regionUrlMaps().insert(
+            project=self.credential.project,
+            region=self.credential.region,
+            body=conf
+        ).execute()
+
+        self.wait_operation(
+            region=self.credential.region,
+            operation=um.get('name')
+        )
+
+        return um_name
