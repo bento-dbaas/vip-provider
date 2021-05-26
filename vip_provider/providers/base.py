@@ -64,13 +64,13 @@ class ProviderBase(BaseProvider):
         vip_obj.save()
         return bc_name
 
-    def create_url_map(self, vip):
+    def create_forwarding_rule(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
-        um_name = self._create_url_map(vip_obj)
+        fr_name = self._create_forwarding_rule(vip_obj)
 
-        vip_obj.url_map = um_name
+        vip_obj.forwarding_rule = fr_name
         vip_obj.save()
-        return um_name
+        return fr_name
 
     def add_real(self, *args, **kw):
         return self._add_real(*args, **kw)
@@ -105,7 +105,7 @@ class ProviderBase(BaseProvider):
     def _create_backend_service(self, vip):
         raise NotImplementedError
 
-    def _create_url_map(self, vip):
+    def _create_forwading_rule(self, vip):
         raise NotImplementedError
 
     def delete_vip(self, identifier):

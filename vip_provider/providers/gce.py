@@ -7,6 +7,7 @@ import googleapiclient.discovery
 from google.oauth2 import service_account
 
 from vip_provider.models import InstanceGroup
+import json
 
 
 class ProviderGce(ProviderBase):
@@ -122,13 +123,23 @@ class ProviderGce(ProviderBase):
                     zone
                 ),
                 body=instances
-            ).execute()
+            )
+
+            # safe fail when try to re-add instances
+            try:
+                add_inst.execute()
+            except HttpError as ex:
+                if (ex.resp.status == 400 and
+                   json.loads(ex.content)["error"]["errors"]
+                   [0]["reason"] == "memberAlreadyExists"):
+                    continue
+
+                raise ex
 
             self.wait_operation(
                 zone=zone,
                 operation=add_inst.get('name')
             )
-
         return True
 
     def _create_healthcheck(self, vip):
@@ -185,9 +196,10 @@ class ProviderGce(ProviderBase):
         conf = {
             "name": bs_name,
             "backends": [{'group': x} for x in instance_group_uri],
-            "loadBalancingScheme": "INTERNAL_MANAGED",
+            "loadBalancingScheme": "INTERNAL",
             "healthChecks": [healthcheck_uri],
-            "protocol": "HTTP"
+            "protocol": "TCP",
+            # "port": 3306
         }
 
         bs = self.client.regionBackendServices().insert(
@@ -203,27 +215,34 @@ class ProviderGce(ProviderBase):
 
         return bs_name
 
-    def _create_url_map(self, vip):
-        um_name = "um-%s" % vip.group
+    def _create_forwarding_rule(self, vip):
+        fr_name = "bs-%s" % vip.group
         backend_service_uri = "regions/%s/backendServices/%s" % (
             self.credential.region,
             vip.backend_service
         )
 
-        conf = {
-            "name": um_name,
-            "defaultService": backend_service_uri
+        raise NotImplementedError
+        conf_fr = {
+            "name": fr_name,
+            "loadBalancingScheme": "INTERNAL",
+            "IPProtocol": "TCP",
+            "ports": ["3306"],
+            "network": "projects/gglobo-network-corp-dev-qa/global/networks/network-corp-devqa",
+            "subnetwork": "projects/gglobo-network-corp-dev-qa/regions/southamerica-east1/subnetworks/southamerica-east1-gglobo-dbaas-dev-dev-qa",
+            "networkTier": "PREMIUM",
+            "backendService": backend_service_uri
         }
 
-        um = self.client.regionUrlMaps().insert(
+        fr = self.client.forwardingRules().insert(
             project=self.credential.project,
             region=self.credential.region,
-            body=conf
+            body=conf_fr
         ).execute()
 
         self.wait_operation(
             region=self.credential.region,
-            operation=um.get('name')
+            operation=fr.get('name')
         )
 
-        return um_name
+        return fr_name
