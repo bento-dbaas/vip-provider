@@ -72,6 +72,15 @@ class ProviderBase(BaseProvider):
         vip_obj.save()
         return fr_name
 
+    def allocate_ip(self, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        ip_info = self._allocate_ip(vip_obj)
+
+        vip_obj.vip_ip_name = ip_info.get('name')
+        vip_obj.vip_ip = ip_info.get('address')
+        vip_obj.save()
+        return ip_info
+
     def add_real(self, *args, **kw):
         return self._add_real(*args, **kw)
 
@@ -106,6 +115,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _create_forwading_rule(self, vip):
+        raise NotImplementedError
+
+    def _allocate_ip(self, vip):
         raise NotImplementedError
 
     def delete_vip(self, identifier):

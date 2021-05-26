@@ -216,6 +216,7 @@ class ProviderGce(ProviderBase):
         return bs_name
 
     def _create_forwarding_rule(self, vip):
+        raise NotImplementedError
         fr_name = "fr-%s" % vip.group
         backend_service_uri = "regions/%s/backendServices/%s" % (
             self.credential.region,
@@ -245,3 +246,33 @@ class ProviderGce(ProviderBase):
         )
 
         return fr_name
+
+    def _allocate_ip(self, vip):
+        ip_name = "%s-lbip" % vip.group
+
+        conf = {
+            'subnetwork': self.credential.subnetwork,
+            'addressType': 'INTERNAL',
+            'name': ip_name
+        }
+        # address = self.client.addresses().insert(
+        #     project=self.credential.project,
+        #     region=self.credential.region,
+        #     body=conf
+        # ).execute()
+
+        # self.wait_operation(
+        #     operation=address.get('name'),
+        #     region=self.credential.region
+        # )
+
+        ip_metadata = self.get_internal_static_ip(ip_name)
+
+        return {'name': ip_name, 'address': ip_metadata.get('address')}
+
+    def get_internal_static_ip(self, ip_name):
+        return self.client.addresses().get(
+            project=self.credential.project,
+            region=self.credential.region,
+            address=ip_name
+        ).execute()
