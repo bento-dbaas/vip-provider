@@ -207,20 +207,19 @@ def create_backend_service(provider_name, env, vip):
         return response_invalid_request(str(e))
     return response_created(name=bs)
 
-
 @app.route(("/<string:provider_name>/<string:env>"
-            "/url-map/<string:vip>"),
+            "/forwarding-rule/<string:vip>"),
            methods=['POST'])
 @auth.login_required
-def create_url_mal(provider_name, env, vip):
+def create_forwarding_rule(provider_name, env, vip):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
-        um = provider.create_url_map(vip)
+        fr = provider.create_forwarding_rule(vip)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    return response_created(name=um)
+    return response_created(name=fr)
 
 
 @app.route(("/<string:provider_name>/<string:env>/"

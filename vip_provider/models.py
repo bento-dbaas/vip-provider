@@ -15,9 +15,6 @@ class Vip(Document):
     # GCP specific fields
     healthcheck = StringField(max_length=50, required=False)
     backend_service = StringField(max_length=50, required=False)
-    url_map = StringField(max_length=50, required=False)
-    named_ports = StringField(max_length=50, required=False)
-    target_proxy = StringField(max_length=50, required=False)
     forwarding_rule = StringField(max_length=50, required=False)
 
     # def set_group(self, group):
