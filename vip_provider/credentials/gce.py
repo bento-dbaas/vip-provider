@@ -15,6 +15,10 @@ class CredentialGce(CredentialBase):
     def region(self):
         return self.content['region']
 
+    @property
+    def subnetwork(self):
+        return self.content['subnetwork']
+
 
 class CredentialAddGce(CredentialAdd):
 

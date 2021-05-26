@@ -216,28 +216,27 @@ class ProviderGce(ProviderBase):
         return bs_name
 
     def _create_forwarding_rule(self, vip):
-        fr_name = "bs-%s" % vip.group
+        fr_name = "fr-%s" % vip.group
         backend_service_uri = "regions/%s/backendServices/%s" % (
             self.credential.region,
             vip.backend_service
         )
 
-        raise NotImplementedError
-        conf_fr = {
+        conf = {
             "name": fr_name,
             "loadBalancingScheme": "INTERNAL",
             "IPProtocol": "TCP",
             "ports": ["3306"],
-            "network": "projects/gglobo-network-corp-dev-qa/global/networks/network-corp-devqa",
-            "subnetwork": "projects/gglobo-network-corp-dev-qa/regions/southamerica-east1/subnetworks/southamerica-east1-gglobo-dbaas-dev-dev-qa",
+            'subnetwork': self.credential.subnetwork,
             "networkTier": "PREMIUM",
-            "backendService": backend_service_uri
+            "backendService": backend_service_uri,
+            "allowGlobalAccess": True
         }
 
         fr = self.client.forwardingRules().insert(
             project=self.credential.project,
             region=self.credential.region,
-            body=conf_fr
+            body=conf
         ).execute()
 
         self.wait_operation(
