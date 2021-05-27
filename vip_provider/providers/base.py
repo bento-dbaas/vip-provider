@@ -72,6 +72,14 @@ class ProviderBase(BaseProvider):
         vip_obj.save()
         return fr_name
 
+    def destroy_forwarding_rule(self, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        self._destroy_forwarding_rule(vip_obj)
+
+        vip_obj.forwarding_rule = None
+        vip_obj.save()
+        return True
+
     def allocate_ip(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
         ip_info = self._allocate_ip(vip_obj)
@@ -115,6 +123,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _create_forwading_rule(self, vip):
+        raise NotImplementedError
+
+    def _destroy_forwarding_rule(self, vip):
         raise NotImplementedError
 
     def _allocate_ip(self, vip):
