@@ -209,17 +209,23 @@ def create_backend_service(provider_name, env, vip):
 
 @app.route(("/<string:provider_name>/<string:env>"
             "/forwarding-rule/<string:vip>"),
-           methods=['POST'])
+           methods=['POST', 'DELETE'])
 @auth.login_required
 def create_forwarding_rule(provider_name, env, vip):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
+
+        if request.method == "DELETE":
+            provider.destroy_forwarding_rule(vip)
+            return response_no_content()
+
         fr = provider.create_forwarding_rule(vip)
+        return response_created(name=fr)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    return response_created(name=fr)
+    
 
 
 @app.route(("/<string:provider_name>/<string:env>"
@@ -364,6 +370,10 @@ def response_ok(**kwargs):
     if kwargs:
         return _response(200, **kwargs)
     return _response(200, message="ok")
+
+
+def response_no_content():
+    return _response(204)
 
 
 def _response(status, **kwargs):

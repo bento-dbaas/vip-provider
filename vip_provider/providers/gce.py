@@ -215,6 +215,20 @@ class ProviderGce(ProviderBase):
 
         return bs_name
 
+    def _destroy_forwarding_rule(self, vip):
+        fr = self.client.forwardingRules().delete(
+            project=self.credential.project,
+            region=self.credential.region,
+            forwardingRule=vip.forwarding_rule
+        ).execute()
+
+        self.wait_operation(
+            region=self.credential.region,
+            operation=fr.get('name')
+        )
+
+        return True
+
     def _create_forwarding_rule(self, vip):
         fr_name = "fr-%s" % vip.group
         backend_service_uri = "regions/%s/backendServices/%s" % (
@@ -251,6 +265,9 @@ class ProviderGce(ProviderBase):
         )
 
         return fr_name
+
+    def _destroy_allocate_ip(self, vip):
+        pass
 
     def _allocate_ip(self, vip):
         ip_name = "%s-lbip" % vip.group
