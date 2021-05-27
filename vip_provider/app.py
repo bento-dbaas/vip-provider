@@ -159,10 +159,10 @@ def create_instance_group(provider_name, env):
 
 
 @app.route(("/<string:provider_name>/<string:env>"
-            "/add-instance-group/<string:vip>"),
-           methods=['POST'])
+            "/instance-in-group/<string:vip>"),
+           methods=['POST', 'DELETE'])
 @auth.login_required
-def add_instance_in_group(provider_name, env, vip):
+def instance_in_group(provider_name, env, vip):
     data = request.get_json()
     equipments = data.get("equipments", None)
 
@@ -171,11 +171,15 @@ def add_instance_in_group(provider_name, env, vip):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
+        if request.method == "DELETE":
+            provider.remove_instance_in_group(equipments, vip)
+            return response_no_content()
+
         vip = provider.add_instance_in_group(equipments, vip)
+        return response_ok()
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    return response_ok()
 
 
 @app.route(("/<string:provider_name>/<string:env>"
