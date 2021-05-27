@@ -180,38 +180,47 @@ def add_instance_in_group(provider_name, env, vip):
 
 @app.route(("/<string:provider_name>/<string:env>"
             "/healthcheck/<string:vip>"),
-           methods=['POST'])
+           methods=['POST', 'DELETE'])
 @auth.login_required
-def create_healthcheck(provider_name, env, vip):
+def healthcheck(provider_name, env, vip):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
+        if request.method == "DELETE":
+            provider.destroy_healthcheck(vip)
+            return response_no_content()
+
         hc = provider.create_healthcheck(vip)
+        return response_created(name=hc)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    return response_created(name=hc)
 
 
 @app.route(("/<string:provider_name>/<string:env>"
             "/backend-service/<string:vip>"),
-           methods=['POST'])
+           methods=['POST', 'DELETE'])
 @auth.login_required
-def create_backend_service(provider_name, env, vip):
+def backend_service(provider_name, env, vip):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
+
+        if request.method == "DELETE":
+            provider.destroy_backend_service(vip)
+            return response_no_content()
+
         bs = provider.create_backend_service(vip)
+        return response_created(name=bs)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    return response_created(name=bs)
 
 @app.route(("/<string:provider_name>/<string:env>"
             "/forwarding-rule/<string:vip>"),
            methods=['POST', 'DELETE'])
 @auth.login_required
-def create_forwarding_rule(provider_name, env, vip):
+def forwarding_rule(provider_name, env, vip):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
@@ -225,7 +234,6 @@ def create_forwarding_rule(provider_name, env, vip):
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    
 
 
 @app.route(("/<string:provider_name>/<string:env>"
