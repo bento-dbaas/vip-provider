@@ -267,7 +267,18 @@ class ProviderGce(ProviderBase):
         return fr_name
 
     def _destroy_allocate_ip(self, vip):
-        pass
+        ip = self.client.addresses().delete(
+            project=self.credential.project,
+            region=self.credential.region,
+            address=vip.vip_ip_name
+        ).execute()
+
+        self.wait_operation(
+            operation=ip.get('name'),
+            region=self.credential.region
+        )
+
+        return True
 
     def _allocate_ip(self, vip):
         ip_name = "%s-lbip" % vip.group

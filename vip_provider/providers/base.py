@@ -89,6 +89,15 @@ class ProviderBase(BaseProvider):
         vip_obj.save()
         return ip_info
 
+    def destroy_allocate_ip(self, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        self._destroy_allocate_ip(vip_obj)
+
+        vip_obj.vip_ip = ""
+        vip_obj.vip_ip_name = None
+        vip_obj.save()
+        return True
+
     def add_real(self, *args, **kw):
         return self._add_real(*args, **kw)
 
@@ -129,6 +138,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _allocate_ip(self, vip):
+        raise NotImplementedError
+
+    def _destroy_allocate_ip(self, vip):
         raise NotImplementedError
 
     def delete_vip(self, identifier):
