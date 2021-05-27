@@ -55,6 +55,15 @@ class ProviderBase(BaseProvider):
 
         vip_obj.save()
         return hc_name
+    
+    def destroy_healthcheck(self, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        self._destroy_healthcheck(vip_obj)
+
+        vip_obj.healthcheck = None
+
+        vip_obj.save()
+        return True
 
     def create_backend_service(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
@@ -63,6 +72,14 @@ class ProviderBase(BaseProvider):
         vip_obj.backend_service = bc_name
         vip_obj.save()
         return bc_name
+
+    def destroy_backend_service(self, vip):
+        vip_obj = Vip.objects(pk=vip).get()
+        self._destroy_backend_service(vip_obj)
+
+        vip_obj.backend_service = None
+        vip_obj.save()
+        return True
 
     def create_forwarding_rule(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
@@ -128,7 +145,13 @@ class ProviderBase(BaseProvider):
     def _create_healthcheck(self, vip):
         raise NotImplementedError
 
+    def _destroy_healthcheck(self, vip):
+        raise NotImplementedError
+
     def _create_backend_service(self, vip):
+        raise NotImplementedError
+
+    def _destroy_backend_service(self, vip):
         raise NotImplementedError
 
     def _create_forwading_rule(self, vip):

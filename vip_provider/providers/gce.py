@@ -142,6 +142,20 @@ class ProviderGce(ProviderBase):
             )
         return True
 
+    def _destroy_healthcheck(self, vip):
+        hc = self.client.regionHealthChecks().delete(
+            project=self.credential.project,
+            region=self.credential.region,
+            healthCheck=vip.healthcheck
+        ).execute()
+
+        self.wait_operation(
+            region=self.credential.region,
+            operation=hc.get('name')
+        )
+
+        return True
+
     def _create_healthcheck(self, vip):
         hc_name = "hc-%s" % vip.group
         conf = {
@@ -177,6 +191,20 @@ class ProviderGce(ProviderBase):
         )
 
         return hc_name
+
+    def _destroy_backend_service(self, vip):
+        bs = self.client.regionBackendServices().delete(
+            project=self.credential.project,
+            region=self.credential.region,
+            backendService=vip.backend_service
+        ).execute()
+
+        self.wait_operation(
+            region=self.credential.region,
+            operation=bs.get('name')
+        )
+
+        return True
 
     def _create_backend_service(self, vip):
         bs_name = "bs-%s" % vip.group
