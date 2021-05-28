@@ -113,10 +113,7 @@ class ProviderGce(ProviderBase):
                 groups.append(ig)
 
         vip.vip_id = vip.group
-
         return groups
-
-
 
     def _add_instance_in_group(self, equipments, vip):
         for eq in equipments:
@@ -133,7 +130,7 @@ class ProviderGce(ProviderBase):
                 ]
             }
 
-            add_inst = self.client.instanceGroups().addInstances(
+            add_inst_req = self.client.instanceGroups().addInstances(
                 project=self.credential.project,
                 zone=zone,
                 instanceGroup=self.__get_instance_group_name(
@@ -145,7 +142,7 @@ class ProviderGce(ProviderBase):
 
             # safe fail when try to re-add instances
             try:
-                add_inst.execute()
+                add_inst = add_inst_req.execute()
             except HttpError as ex:
                 if (ex.resp.status == 400 and
                    json.loads(ex.content)["error"]["errors"]
