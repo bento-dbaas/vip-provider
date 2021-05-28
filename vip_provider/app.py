@@ -133,47 +133,55 @@ def create_vip(provider_name, env):
 
 
 @app.route("/<string:provider_name>/<string:env>/instance-group",
+           defaults={'vip': None},
            methods=['POST'])
+@app.route(("/<string:provider_name>/<string:env>"
+            "/instance-group/<string:vip>"),
+           methods=['DELETE'])
 @auth.login_required
-def create_instance_group(provider_name, env):
+def create_instance_group(provider_name, env, vip):
     data = request.get_json()
     group = data.get("group", None)
     port = data.get("port", None)
     vip_dns = data.get("vip_dns", None)
     equipments = data.get("equipments", None)
+    destroy_vip = data.get("destroy_vip", None)
 
-    if not(group and port):
+    if request.method == "POST" and not(group and port):
         return response_invalid_request("Invalid data {}".format(data))
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
+        if request.method == "DELETE":
+            provider.remove_instance_group(
+                equipments, vip, destroy_vip)
+            return response_no_content()
+
         vip = provider.create_instance_group(group, port, vip_dns, equipments)
+        return response_created(
+            vip_identifier=str(vip[0].id),
+            groups=[
+                {'identifier': str(x.id),
+                 'name': x.name} for x in vip[1]])
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
-    return response_created(
-        vip_identifier=str(vip[0].id),
-        groups=[
-            {'identifier': str(x.id),
-             'name': x.name} for x in vip[1]])
 
 
 @app.route(("/<string:provider_name>/<string:env>"
             "/instance-in-group/<string:vip>"),
-           methods=['POST', 'DELETE'])
+           methods=['POST'])
 @auth.login_required
 def instance_in_group(provider_name, env, vip):
     data = request.get_json()
     equipments = data.get("equipments", None)
+    destroy_vip = data.get("destroy_vip", None)
 
     if not(equipments):
         return response_invalid_request("Invalid data {}".format(data))
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
-        if request.method == "DELETE":
-            provider.remove_instance_in_group(equipments, vip)
-            return response_no_content()
 
         vip = provider.add_instance_in_group(equipments, vip)
         return response_ok()
@@ -219,6 +227,7 @@ def backend_service(provider_name, env, vip):
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
+
 
 @app.route(("/<string:provider_name>/<string:env>"
             "/forwarding-rule/<string:vip>"),

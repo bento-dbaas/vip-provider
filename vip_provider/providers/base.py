@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from vip_provider.models import Vip
+from vip_provider.models import Vip, InstanceGroup
 
 from dbaas_base_provider.baseProvider import BaseProvider
 
@@ -47,6 +47,29 @@ class ProviderBase(BaseProvider):
         vip_obj = Vip.objects(pk=vip).get()
         return self._add_instance_in_group(equipments, vip_obj)
 
+    def remove_instance_group(self, equipments, vip, destroy_vip=False):
+        instance_groups = []
+        for eq in equipments:
+            instance_groups.append(
+                InstanceGroup.objects(
+                    vip=vip,
+                    zone=eq.get('zone')
+                ).get()
+            )
+
+        vip_obj = Vip.objects(pk=vip).get()
+
+        self._remove_instance_group(
+            instance_groups, vip_obj, destroy_vip)
+
+        for ig in instance_groups:
+            ig.delete()
+
+        if destroy_vip:
+            vip_obj.delete()
+
+        return True
+
     def create_healthcheck(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
         hc_name = self._create_healthcheck(vip_obj)
@@ -55,7 +78,7 @@ class ProviderBase(BaseProvider):
 
         vip_obj.save()
         return hc_name
-    
+
     def destroy_healthcheck(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
         self._destroy_healthcheck(vip_obj)
@@ -140,6 +163,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _add_instance_in_group(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def _remove_instance_group(self, *args, **kwargs):
         raise NotImplementedError
 
     def _create_healthcheck(self, vip):

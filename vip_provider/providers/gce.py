@@ -68,6 +68,22 @@ class ProviderGce(ProviderBase):
             zone
         )
 
+    def _remove_instance_group(self, instance_group, vip, destroy_vip):
+        for ig in instance_group:
+            ig_del = self.client.instanceGroups().delete(
+                project=self.credential.project,
+                zone=ig.zone,
+                instanceGroup=ig.name
+            ).execute()
+
+            self.wait_operation(
+                zone=ig.zone,
+                operation=ig_del.get('name')
+            )
+            ig.delete()
+
+        return True
+
     def _create_instance_group(self, vip, equipments):
         '''create one group to each zone'''
         groups = []
@@ -99,6 +115,8 @@ class ProviderGce(ProviderBase):
         vip.vip_id = vip.group
 
         return groups
+
+
 
     def _add_instance_in_group(self, equipments, vip):
         for eq in equipments:
