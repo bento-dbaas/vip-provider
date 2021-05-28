@@ -181,7 +181,7 @@ class ProviderGce(ProviderBase):
                 "host": "",
                 "port": 80,
                 "proxyHeader": "NONE",
-                "requestPath": "/health-check/",
+                "requestPath": "/health-check/foxha/",
                 "response": "WORKING"
             },
             "logConfig": {
