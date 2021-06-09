@@ -3,7 +3,7 @@ from vip_provider.models import Vip, InstanceGroup
 
 from dbaas_base_provider.baseProvider import BaseProvider
 
-
+from mongoengine.queryset import DoesNotExist
 class ProviderBase(BaseProvider):
 
     provider_type = "vip_provider"
@@ -27,10 +27,13 @@ class ProviderBase(BaseProvider):
         return vip
 
     def create_instance_group(self, group, port, vip_dns, equipments):
-        vip = Vip()
+        try:
+            vip = Vip.objects(port=port, group=group).get()
+        except DoesNotExist:
+            vip = Vip()
+
         vip.port = port
         vip.group = group
-        vip.vip_dns = vip_dns
         instance_groups = self._create_instance_group(
             vip, equipments)
 
@@ -47,7 +50,8 @@ class ProviderBase(BaseProvider):
         vip_obj = Vip.objects(pk=vip).get()
         return self._add_instance_in_group(equipments, vip_obj)
 
-    def remove_instance_group(self, equipments, vip, destroy_vip=False):
+    def remove_instance_group(self, equipments, vip,
+                              destroy_vip=False, only_if_empty=False):
         instance_groups = []
         for eq in equipments:
             instance_groups.append(
@@ -59,16 +63,20 @@ class ProviderBase(BaseProvider):
 
         vip_obj = Vip.objects(pk=vip).get()
 
-        self._remove_instance_group(
-            instance_groups, vip_obj, destroy_vip)
+        destroyed = self._remove_instance_group(
+                        instance_groups, vip_obj,
+                        destroy_vip, only_if_empty=only_if_empty)
 
         for ig in instance_groups:
+            if str(ig.pk) not in destroyed:
+                continue
+
             ig.delete()
 
         if destroy_vip:
             vip_obj.delete()
 
-        return True
+        return destroyed
 
     def create_healthcheck(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
