@@ -68,13 +68,26 @@ class ProviderGce(ProviderBase):
             zone
         )
 
-    def _remove_instance_group(self, instance_group, vip, destroy_vip):
+    def _remove_instance_group(self, instance_group, vip,
+                               destroy_vip, only_if_empty=False):
+        destroyed = []
         for ig in instance_group:
+            if only_if_empty:
+                ig_get = self.client.instanceGroups().get(
+                    project=self.credential.project,
+                    zone=ig.zone,
+                    instanceGroup=ig.name
+                ).execute()
+                if ig_get['size'] > 0:
+                    continue
+
             ig_del = self.client.instanceGroups().delete(
                 project=self.credential.project,
                 zone=ig.zone,
                 instanceGroup=ig.name
             ).execute()
+
+            destroyed.append(str(ig.pk))
 
             self.wait_operation(
                 zone=ig.zone,
@@ -82,7 +95,7 @@ class ProviderGce(ProviderBase):
             )
             ig.delete()
 
-        return True
+        return destroyed
 
     def _create_instance_group(self, vip, equipments):
         '''create one group to each zone'''
@@ -101,7 +114,17 @@ class ProviderGce(ProviderBase):
                     project=self.credential.project,
                     zone=zone,
                     body=conf
-                ).execute()
+                )
+
+                try:
+                    add_ig = add_ig.execute()
+                except HttpError as ex:
+                    if (ex.resp.status == 409 and
+                       json.loads(ex.content)["error"]["errors"]
+                       [0]["reason"] == "alreadyExists"):
+                        continue
+
+                    raise ex
 
                 self.wait_operation(
                     zone=zone,

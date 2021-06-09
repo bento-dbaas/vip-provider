@@ -168,6 +168,28 @@ def create_instance_group(provider_name, env, vip):
         return response_invalid_request(str(e))
 
 
+@app.route(("/<string:provider_name>/<string:env>/"
+            "destroy-empty-instance-group/<string:vip>"),
+           methods=['DELETE'])
+def destroy_empty_instance_group(provider_name, env, vip):
+    data = request.get_json()
+    zone = data.get('zone', None)
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+
+        d = provider.remove_instance_group(
+            [{'zone': zone}],
+            vip,
+            destroy_vip=False,
+            only_if_empty=True)
+        return response_ok(destroyed=d)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+
 @app.route(("/<string:provider_name>/<string:env>"
             "/instance-in-group/<string:vip>"),
            methods=['POST'])
