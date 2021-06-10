@@ -104,6 +104,20 @@ class ProviderBase(BaseProvider):
         vip_obj.save()
         return bc_name
 
+    def update_backend_service(self, vip, exclude_zone):
+        vip_obj = Vip.objects(pk=vip).get()
+        instance_groups = InstanceGroup.objects(
+            vip=vip_obj, zone__ne=exclude_zone
+        )
+
+        self._update_backend_service(
+            vip_obj, instance_groups)
+
+        ig_excluded = InstanceGroup.objects(
+            vip=vip, zone=exclude_zone).get()
+
+        return str(ig_excluded.pk)
+
     def destroy_backend_service(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
         self._destroy_backend_service(vip_obj)
@@ -174,6 +188,9 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _remove_instance_group(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def _update_backend_service(self, *args, **kwargs):
         raise NotImplementedError
 
     def _create_healthcheck(self, vip):

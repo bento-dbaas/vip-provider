@@ -233,9 +233,15 @@ def healthcheck(provider_name, env, vip):
 
 @app.route(("/<string:provider_name>/<string:env>"
             "/backend-service/<string:vip>"),
-           methods=['POST', 'DELETE'])
+           methods=['POST', 'DELETE', 'PATCH'])
 @auth.login_required
 def backend_service(provider_name, env, vip):
+    data = request.get_json()
+    if not data:
+        data = {}
+
+    exclude_zone = data.get("exclude_zone", None)
+
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
@@ -243,6 +249,10 @@ def backend_service(provider_name, env, vip):
         if request.method == "DELETE":
             provider.destroy_backend_service(vip)
             return response_no_content()
+        elif request.method == "PATCH":
+            d = provider.update_backend_service(
+                    vip=vip, exclude_zone=exclude_zone)
+            return response_ok(id=d)
 
         bs = provider.create_backend_service(vip)
         return response_created(name=bs)

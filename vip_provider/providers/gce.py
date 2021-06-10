@@ -244,6 +244,31 @@ class ProviderGce(ProviderBase):
 
         return True
 
+    def _update_backend_service(self, vip, instance_groups):
+        conf = {}
+        instance_group_uri = []
+        for ig in instance_groups:
+            uri = "zones/%s/instanceGroups/%s" % (
+                ig.zone,
+                ig.name
+            )
+            instance_group_uri.append(uri)
+
+        conf = {"backends": [{'group': x} for x in instance_group_uri]}
+        bs = self.client.regionBackendServices().patch(
+            project=self.credential.project,
+            region=self.credential.region,
+            backendService=vip.backend_service,
+            body=conf
+        ).execute()
+
+        self.wait_operation(
+            region=self.credential.region,
+            operation=bs.get('name')
+        )
+
+        return True
+
     def _create_backend_service(self, vip):
         bs_name = "bs-%s" % vip.group
         healthcheck_uri = "regions/%s/healthChecks/%s" % (
