@@ -4,6 +4,8 @@ from vip_provider.models import Vip, InstanceGroup
 from dbaas_base_provider.baseProvider import BaseProvider
 
 from mongoengine.queryset import DoesNotExist
+
+
 class ProviderBase(BaseProvider):
 
     provider_type = "vip_provider"
