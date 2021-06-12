@@ -254,7 +254,9 @@ class ProviderGce(ProviderBase):
             )
             instance_group_uri.append(uri)
 
-        conf = {"backends": [{'group': x} for x in instance_group_uri]}
+        conf = {"backends": [
+                {'group': x,
+                 "failover": i > 0} for i, x in enumerate(instance_group_uri)]}
         bs = self.client.regionBackendServices().patch(
             project=self.credential.project,
             region=self.credential.region,
@@ -286,11 +288,15 @@ class ProviderGce(ProviderBase):
 
         conf = {
             "name": bs_name,
-            "backends": [{'group': x} for x in instance_group_uri],
+            "backends": [
+                {'group': x,
+                 "failover": i > 0} for i, x in enumerate(instance_group_uri)],
             "loadBalancingScheme": "INTERNAL",
             "healthChecks": [healthcheck_uri],
             "protocol": "TCP",
-            # "port": 3306
+            "failoverPolicy": {
+                "dropTrafficIfUnhealthy": True,
+            }
         }
 
         bs = self.client.regionBackendServices().insert(
@@ -298,6 +304,7 @@ class ProviderGce(ProviderBase):
             region=self.credential.region,
             body=conf
         ).execute()
+
 
         self.wait_operation(
             region=self.credential.region,
