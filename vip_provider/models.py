@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from mongoengine import Document, StringField, IntField, ReferenceField, CASCADE
+from mongoengine import (Document, StringField, ListField,
+                         IntField, ReferenceField, CASCADE)
 
 
 class Vip(Document):
@@ -11,6 +12,11 @@ class Vip(Document):
     target_group_id = StringField(required=False)
     dscp = IntField(required=False)
 
+    # GCP specific fields
+    healthcheck = StringField(max_length=50, required=False)
+    backend_service = StringField(max_length=50, required=False)
+    forwarding_rule = StringField(max_length=50, required=False)
+    vip_ip_name = StringField(max_length=50, required=False)
     # def set_group(self, group):
     #     self.group = group
     #     pair = Vip.objects(group=group).first()
@@ -30,5 +36,26 @@ class Vip(Document):
             'vip_ip': self.vip_ip,
             'dscp': self.dscp,
             'pool_id': self.pool_id,
-            'target_group_id': self.target_group_id
+            'target_group_id': self.target_group_id,
+            'healthcheck': self.healthcheck,
+            'backend_service': self.backend_service,
+            'forwarding_rule': self.forwarding_rule,
+            'vip_ip_name': self.vip_ip_name
+        }
+
+
+class InstanceGroup(Document):
+    vip = ReferenceField(Vip, required=True, reverse_delete_rule=CASCADE)
+    name = StringField(required=True, max_length=60)
+    zone = StringField(required=True, max_length=50)
+
+    @property
+    def uuid(self):
+        return str(self.pk)
+
+    def to_json(self):
+        return {
+            'id': self._id,
+            'vip': self.vip,
+            'name': self.name
         }

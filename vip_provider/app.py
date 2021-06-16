@@ -132,7 +132,176 @@ def create_vip(provider_name, env):
     return response_created(identifier=str(vip.id), ip=vip.vip_ip)
 
 
-@app.route("/<string:provider_name>/<string:env>/vip/<string:identifier>/reals", methods=['PUT'])
+@app.route("/<string:provider_name>/<string:env>/instance-group",
+           defaults={'vip': None},
+           methods=['POST'])
+@app.route(("/<string:provider_name>/<string:env>"
+            "/instance-group/<string:vip>"),
+           methods=['DELETE'])
+@auth.login_required
+def create_instance_group(provider_name, env, vip):
+    data = request.get_json()
+    group = data.get("group", None)
+    port = data.get("port", None)
+    vip_dns = data.get("vip_dns", None)
+    equipments = data.get("equipments", None)
+    destroy_vip = data.get("destroy_vip", None)
+
+    if request.method == "POST" and not(group and port):
+        return response_invalid_request("Invalid data {}".format(data))
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        if request.method == "DELETE":
+            provider.remove_instance_group(
+                equipments, vip, destroy_vip)
+            return response_no_content()
+
+        vip = provider.create_instance_group(group, port, vip_dns, equipments)
+        return response_created(
+            vip_identifier=str(vip[0].id),
+            groups=[
+                {'identifier': str(x.id),
+                 'name': x.name} for x in vip[1]])
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+
+@app.route(("/<string:provider_name>/<string:env>/"
+            "destroy-empty-instance-group/<string:vip>"),
+           methods=['DELETE'])
+def destroy_empty_instance_group(provider_name, env, vip):
+    data = request.get_json()
+    zone = data.get('zone', None)
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+
+        d = provider.remove_instance_group(
+            [{'zone': zone}],
+            vip,
+            destroy_vip=False,
+            only_if_empty=True)
+        return response_ok(destroyed=d)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+
+@app.route(("/<string:provider_name>/<string:env>"
+            "/instance-in-group/<string:vip>"),
+           methods=['POST'])
+@auth.login_required
+def instance_in_group(provider_name, env, vip):
+    data = request.get_json()
+    equipments = data.get("equipments", None)
+    destroy_vip = data.get("destroy_vip", None)
+
+    if not(equipments):
+        return response_invalid_request("Invalid data {}".format(data))
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+
+        vip = provider.add_instance_in_group(equipments, vip)
+        return response_ok()
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+
+@app.route(("/<string:provider_name>/<string:env>"
+            "/healthcheck/<string:vip>"),
+           methods=['POST', 'DELETE'])
+@auth.login_required
+def healthcheck(provider_name, env, vip):
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        if request.method == "DELETE":
+            provider.destroy_healthcheck(vip)
+            return response_no_content()
+
+        hc = provider.create_healthcheck(vip)
+        return response_created(name=hc)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+
+@app.route(("/<string:provider_name>/<string:env>"
+            "/backend-service/<string:vip>"),
+           methods=['POST', 'DELETE', 'PATCH'])
+@auth.login_required
+def backend_service(provider_name, env, vip):
+    data = request.get_json()
+    if not data:
+        data = {}
+
+    exclude_zone = data.get("exclude_zone", None)
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+
+        if request.method == "DELETE":
+            provider.destroy_backend_service(vip)
+            return response_no_content()
+        elif request.method == "PATCH":
+            d = provider.update_backend_service(
+                    vip=vip, exclude_zone=exclude_zone)
+            return response_ok(id=d)
+
+        bs = provider.create_backend_service(vip)
+        return response_created(name=bs)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+
+@app.route(("/<string:provider_name>/<string:env>"
+            "/forwarding-rule/<string:vip>"),
+           methods=['POST', 'DELETE'])
+@auth.login_required
+def forwarding_rule(provider_name, env, vip):
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+
+        if request.method == "DELETE":
+            provider.destroy_forwarding_rule(vip)
+            return response_no_content()
+
+        fr = provider.create_forwarding_rule(vip)
+        return response_created(name=fr)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+
+@app.route(("/<string:provider_name>/<string:env>"
+            "/allocate-ip/<string:vip>"),
+           methods=['POST', 'DELETE'])
+@auth.login_required
+def allocate_ip(provider_name, env, vip):
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        if request.method == "DELETE":
+            provider.destroy_allocate_ip(vip)
+            return response_no_content()
+
+        ip_info = provider.allocate_ip(vip)
+        return response_created(**ip_info)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+
+@app.route(("/<string:provider_name>/<string:env>/"
+            "vip/<string:identifier>/reals"), methods=['PUT'])
 @auth.login_required
 def update_vip_reals(provider_name, env, identifier):
     data = request.get_json()
@@ -151,7 +320,8 @@ def update_vip_reals(provider_name, env, identifier):
     return response_ok(identifier=str(vip.id), ip=vip.vip_ip)
 
 
-@app.route("/<string:provider_name>/<string:env>/vip/<string:vip_id>/reals", methods=['POST'])
+@app.route(("/<string:provider_name>/<string:env>"
+            "/vip/<string:vip_id>/reals"), methods=['POST'])
 @auth.login_required
 def add_vip_real(provider_name, env, vip_id):
     data = request.get_json()
@@ -171,7 +341,8 @@ def add_vip_real(provider_name, env, vip_id):
     )
 
 
-@app.route("/<string:provider_name>/<string:env>/vip/<string:vip_id>/reals/<string:real_id>", methods=['DELETE'])
+@app.route(("/<string:provider_name>/<string:env>/vip/"
+            "<string:vip_id>/reals/<string:real_id>"), methods=['DELETE'])
 @auth.login_required
 def remove_vip_real(provider_name, env, vip_id, real_id):
     return _vip_real_action(
@@ -183,7 +354,8 @@ def remove_vip_real(provider_name, env, vip_id, real_id):
     )
 
 
-@app.route("/<string:provider_name>/<string:env>/vip/healthy", methods=['POST'])
+@app.route("/<string:provider_name>/<string:env>/vip/healthy",
+           methods=['POST'])
 @auth.login_required
 def get_vip_healthy(provider_name, env):
     data = request.get_json()
@@ -257,9 +429,14 @@ def response_ok(**kwargs):
     return _response(200, message="ok")
 
 
+def response_no_content():
+    return _response(204)
+
+
 def _response(status, **kwargs):
     content = jsonify(**kwargs)
     return make_response(content, status)
+
 
 def _vip_real_action(action, provider_name, env, vip_id, real_id, **kw):
 
