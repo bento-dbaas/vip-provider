@@ -10,7 +10,9 @@ class ProviderBase(BaseProvider):
 
     provider_type = "vip_provider"
 
-    def __init__(self, environment, engine=None, auth_info=None):
+    def __init__(self, environment,
+                 engine=None, auth_info=None,
+                 *args, **kwargs):
         super(ProviderBase, self).__init__(
             environment,
             engine=engine,
@@ -128,9 +130,9 @@ class ProviderBase(BaseProvider):
         vip_obj.save()
         return True
 
-    def create_forwarding_rule(self, vip):
+    def create_forwarding_rule(self, vip, **kwargs):
         vip_obj = Vip.objects(pk=vip).get()
-        fr_name = self._create_forwarding_rule(vip_obj)
+        fr_name = self._create_forwarding_rule(vip_obj, **kwargs)
 
         vip_obj.forwarding_rule = fr_name
         vip_obj.save()

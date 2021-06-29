@@ -12,7 +12,7 @@ from vip_provider.models import Vip
 
 class ProviderNetworkAPI(ProviderBase):
 
-    def __init__(self, environment):
+    def __init__(self, environment, *args, **kwargs):
         super(ProviderNetworkAPI, self).__init__(environment)
         self.equipment_api = self.client.create_equipamento()
         self.environment_api = self.client.create_ambiente()

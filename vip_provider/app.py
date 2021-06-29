@@ -146,6 +146,7 @@ def create_instance_group(provider_name, env, vip):
     vip_dns = data.get("vip_dns", None)
     equipments = data.get("equipments", None)
     destroy_vip = data.get("destroy_vip", None)
+    team_name = data.get("team_name", None)
 
     if request.method == "POST" and not(group and port):
         return response_invalid_request("Invalid data {}".format(data))
@@ -266,6 +267,15 @@ def backend_service(provider_name, env, vip):
            methods=['POST', 'DELETE'])
 @auth.login_required
 def forwarding_rule(provider_name, env, vip):
+    data = request.get_json()
+    if not data:
+        data = {}
+
+    team_name = data.get("team_name", None)
+    database_name = data.get("database_name", None)
+    infra_name = data.get("infra_name", None)
+    engine_name = data.get("engine_name", None)
+
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
@@ -274,7 +284,9 @@ def forwarding_rule(provider_name, env, vip):
             provider.destroy_forwarding_rule(vip)
             return response_no_content()
 
-        fr = provider.create_forwarding_rule(vip)
+        fr = provider.create_forwarding_rule(
+            vip, team_name=team_name, database_name=database_name,
+            infra_name=infra_name, engine_name=engine_name)
         return response_created(name=fr)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log

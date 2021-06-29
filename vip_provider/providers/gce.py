@@ -2,10 +2,11 @@ from vip_provider.providers.base import ProviderBase
 from vip_provider.credentials.gce import CredentialGce, CredentialAddGce
 from googleapiclient.errors import HttpError
 
-from vip_provider.settings import HTTP_PROXY
+from vip_provider.settings import HTTP_PROXY, TEAM_API_URL
 import googleapiclient.discovery
 from google.oauth2 import service_account
 
+from dbaas_base_provider.team import TeamClient
 from vip_provider.models import InstanceGroup
 import json
 
@@ -305,7 +306,6 @@ class ProviderGce(ProviderBase):
             body=conf
         ).execute()
 
-
         self.wait_operation(
             region=self.credential.region,
             operation=bs.get('name')
@@ -327,7 +327,21 @@ class ProviderGce(ProviderBase):
 
         return True
 
-    def _create_forwarding_rule(self, vip):
+    def _create_forwarding_rule(self, vip, **kwargs):
+        team_name = kwargs.get("team_name", None)
+        engine_name = kwargs.get("engine_name", None)
+        infra_name = kwargs.get("infra_name", None)
+        database_name = kwargs.get("database_name", None)
+
+        team_client = TeamClient(
+            api_url=TEAM_API_URL, team_name=team_name)
+
+        labels = team_client.make_labels(
+            engine_name=engine_name,
+            infra_name=infra_name,
+            database_name=database_name
+        )
+
         fr_name = "fr-%s" % vip.group
         backend_service_uri = "regions/%s/backendServices/%s" % (
             self.credential.region,
@@ -348,7 +362,8 @@ class ProviderGce(ProviderBase):
             'subnetwork': self.credential.subnetwork,
             "networkTier": "PREMIUM",
             "backendService": backend_service_uri,
-            "allowGlobalAccess": True
+            "allowGlobalAccess": True,
+            "labels": labels
         }
 
         fr = self.client.forwardingRules().insert(
