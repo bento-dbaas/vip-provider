@@ -264,7 +264,7 @@ def backend_service(provider_name, env, vip):
 
 @app.route(("/<string:provider_name>/<string:env>"
             "/forwarding-rule/<string:vip>"),
-           methods=['POST', 'DELETE'])
+           methods=['POST', 'DELETE', 'PATCH'])
 @auth.login_required
 def forwarding_rule(provider_name, env, vip):
     data = request.get_json()
@@ -283,10 +283,13 @@ def forwarding_rule(provider_name, env, vip):
         if request.method == "DELETE":
             provider.destroy_forwarding_rule(vip)
             return response_no_content()
+        elif request.method == "PATCH":
+            provider.add_tags_in_forwarding_rules(
+                vip, team_name=team_name, database_name=database_name,
+                infra_name=infra_name, engine_name=engine_name)
+            return response_created()
 
-        fr = provider.create_forwarding_rule(
-            vip, team_name=team_name, database_name=database_name,
-            infra_name=infra_name, engine_name=engine_name)
+        fr = provider.create_forwarding_rule(vip)
         return response_created(name=fr)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log

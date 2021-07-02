@@ -327,7 +327,11 @@ class ProviderGce(ProviderBase):
 
         return True
 
-    def _create_forwarding_rule(self, vip, **kwargs):
+    def _add_tags_in_forwarding_rules(self, vip, **kwargs):
+        # add labels with patch
+        # forwardint rule does not
+        # support add tags on create
+        # only add tags on resource update
         team_name = kwargs.get("team_name", None)
         engine_name = kwargs.get("engine_name", None)
         infra_name = kwargs.get("infra_name", None)
@@ -342,6 +346,31 @@ class ProviderGce(ProviderBase):
             database_name=database_name
         )
 
+        label_fingerprint = self.client\
+            .forwardingRules().get(
+                project=self.credential.project,
+                region=self.credential.region,
+                forwardingRule=vip.forwarding_rule
+            ).execute().get('labelFingerprint')
+
+        conf = {
+            "labelFingerprint": label_fingerprint,
+            "labels": labels
+        }
+
+        lbl_update = self.client.forwardingRules().setLabels(
+            project=self.credential.project,
+            region=self.credential.region,
+            resource=vip.forwarding_rule,
+            body=conf
+        ).execute()
+
+        return self.wait_operation(
+            region=self.credential.region,
+            operation=lbl_update.get('name')
+        )
+
+    def _create_forwarding_rule(self, vip, **kwargs):
         fr_name = "fr-%s" % vip.group
         backend_service_uri = "regions/%s/backendServices/%s" % (
             self.credential.region,
@@ -362,8 +391,7 @@ class ProviderGce(ProviderBase):
             'subnetwork': self.credential.subnetwork,
             "networkTier": "PREMIUM",
             "backendService": backend_service_uri,
-            "allowGlobalAccess": True,
-            "labels": labels
+            "allowGlobalAccess": True
         }
 
         fr = self.client.forwardingRules().insert(

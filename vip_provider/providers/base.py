@@ -138,6 +138,10 @@ class ProviderBase(BaseProvider):
         vip_obj.save()
         return fr_name
 
+    def add_tags_in_forwarding_rules(self, vip, **kwargs):
+        vip_obj = Vip.objects(pk=vip).get()
+        return self._add_tags_in_forwarding_rules(vip_obj, **kwargs)
+
     def destroy_forwarding_rule(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
         self._destroy_forwarding_rule(vip_obj)
@@ -227,6 +231,9 @@ class ProviderBase(BaseProvider):
         vip.delete()
 
     def _delete_vip(self, vip):
+        raise NotImplementedError
+
+    def _add_tags_in_forwarding_rules(self, vip, **kwargs):
         raise NotImplementedError
 
     def get_vip(self, identifier):
