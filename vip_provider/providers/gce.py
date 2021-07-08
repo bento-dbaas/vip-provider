@@ -1,6 +1,8 @@
 from vip_provider.providers.base import ProviderBase
 from vip_provider.credentials.gce import CredentialGce, CredentialAddGce
 from googleapiclient.errors import HttpError
+import httplib2
+import google_auth_httplib2
 
 from vip_provider.settings import HTTP_PROXY, TEAM_API_URL
 import googleapiclient.discovery
