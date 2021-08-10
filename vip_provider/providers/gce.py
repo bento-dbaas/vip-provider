@@ -84,6 +84,15 @@ class ProviderGce(ProviderBase):
                 if ig_get['size'] > 0:
                     continue
 
+            ig_del = self.get_or_none_resource(
+                self.client.instanceGroups,
+                project=self.credential.project,
+                zone=ig.zone,
+                instanceGroup=ig.name
+            )
+            if ig_del is None:
+                continue
+
             ig_del = self.client.instanceGroups().delete(
                 project=self.credential.project,
                 zone=ig.zone,
@@ -112,27 +121,25 @@ class ProviderGce(ProviderBase):
             )
             if group_name not in groups:
                 ig = InstanceGroup()
-                conf = {"name": group_name}
-                add_ig = self.client.instanceGroups().insert(
-                    project=self.credential.project,
+
+                add_ig = self.get_or_none_resource(
+                    self.client.instanceGroups,
                     zone=zone,
-                    body=conf
+                    instanceGroup=group_name
                 )
 
-                try:
-                    add_ig = add_ig.execute()
-                except HttpError as ex:
-                    if (ex.resp.status == 409 and
-                       json.loads(ex.content)["error"]["errors"]
-                       [0]["reason"] == "alreadyExists"):
-                        continue
+                if add_ig is None:
+                    conf = {"name": group_name}
+                    add_ig = self.client.instanceGroups().insert(
+                        project=self.credential.project,
+                        zone=zone,
+                        body=conf
+                    ).execute()
 
-                    raise ex
-
-                self.wait_operation(
-                    zone=zone,
-                    operation=add_ig.get('name')
-                )
+                    self.wait_operation(
+                        zone=zone,
+                        operation=add_ig.get('name')
+                    )
 
                 ig.name = group_name
                 ig.zone = zone
@@ -184,6 +191,15 @@ class ProviderGce(ProviderBase):
         return True
 
     def _destroy_healthcheck(self, vip):
+        hc = self.get_or_none_resource(
+            self.client.regionHealthChecks,
+            project=self.credential.project,
+            region=self.credential.region,
+            healthCheck=vip.healthcheck
+        )
+        if hc is None:
+            return True
+
         hc = self.client.regionHealthChecks().delete(
             project=self.credential.project,
             region=self.credential.region,
@@ -199,6 +215,15 @@ class ProviderGce(ProviderBase):
 
     def _create_healthcheck(self, vip):
         hc_name = "hc-%s" % vip.group
+        hc = self.get_or_none_resource(
+            self.client.regionHealthChecks,
+            project=self.credential.project,
+            region=self.credential.region,
+            healthCheck=hc_name
+        )
+        if hc is not None:
+            return hc_name
+
         conf = {
             "checkIntervalSec": 5,
             "description": "",
@@ -234,6 +259,15 @@ class ProviderGce(ProviderBase):
         return hc_name
 
     def _destroy_backend_service(self, vip):
+        bs = self.get_or_none_resource(
+            self.client.regionBackendServices,
+            project=self.credential.project,
+            region=self.credential.region,
+            backendService=vip.backend_service
+        )
+        if bs is None:
+            return True
+
         bs = self.client.regionBackendServices().delete(
             project=self.credential.project,
             region=self.credential.region,
@@ -276,6 +310,16 @@ class ProviderGce(ProviderBase):
 
     def _create_backend_service(self, vip):
         bs_name = "bs-%s" % vip.group
+
+        bs = self.get_or_none_resource(
+            self.client.regionBackendServices,
+            project=self.credential.project,
+            region=self.credential.region,
+            backendService=bs_name
+        )
+        if bs is not None:
+            return bs_name
+
         healthcheck_uri = "regions/%s/healthChecks/%s" % (
             self.credential.region,
             vip.healthcheck
@@ -316,6 +360,15 @@ class ProviderGce(ProviderBase):
         return bs_name
 
     def _destroy_forwarding_rule(self, vip):
+        fr = self.get_or_none_resource(
+            self.client.forwardingRules,
+            project=self.credential.project,
+            region=self.credential.region,
+            forwardingRule=vip.forwarding_rule
+        )
+        if fr is None:
+            return True
+
         fr = self.client.forwardingRules().delete(
             project=self.credential.project,
             region=self.credential.region,
@@ -374,6 +427,16 @@ class ProviderGce(ProviderBase):
 
     def _create_forwarding_rule(self, vip, **kwargs):
         fr_name = "fr-%s" % vip.group
+
+        fr = self.get_or_none_resource(
+            self.client.forwardingRules,
+            project=self.credential.project,
+            region=self.credential.region,
+            forwardingRule=fr_name
+        )
+        if fr is not None:
+            return fr_name
+
         backend_service_uri = "regions/%s/backendServices/%s" % (
             self.credential.region,
             vip.backend_service
@@ -410,6 +473,15 @@ class ProviderGce(ProviderBase):
         return fr_name
 
     def _destroy_allocate_ip(self, vip):
+        ip = self.get_or_none_resource(
+            self.client.addresses,
+            project=self.credential.project,
+            region=self.credential.region,
+            address=vip.vip_ip_name
+        )
+        if ip is None:
+            return True
+
         ip = self.client.addresses().delete(
             project=self.credential.project,
             region=self.credential.region,
@@ -426,21 +498,29 @@ class ProviderGce(ProviderBase):
     def _allocate_ip(self, vip):
         ip_name = "%s-lbip" % vip.group
 
-        conf = {
-            'subnetwork': self.credential.subnetwork,
-            'addressType': 'INTERNAL',
-            'name': ip_name
-        }
-        address = self.client.addresses().insert(
+        address = self.get_or_none_resource(
+            self.client.addresses,
             project=self.credential.project,
             region=self.credential.region,
-            body=conf
-        ).execute()
-
-        self.wait_operation(
-            operation=address.get('name'),
-            region=self.credential.region
+            address=ip_name
         )
+
+        if address is None:
+            conf = {
+                'subnetwork': self.credential.subnetwork,
+                'addressType': 'INTERNAL',
+                'name': ip_name
+            }
+            address = self.client.addresses().insert(
+                project=self.credential.project,
+                region=self.credential.region,
+                body=conf
+            ).execute()
+
+            self.wait_operation(
+                operation=address.get('name'),
+                region=self.credential.region
+            )
 
         ip_metadata = self.get_internal_static_ip(ip_name)
 
