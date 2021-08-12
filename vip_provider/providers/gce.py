@@ -124,6 +124,7 @@ class ProviderGce(ProviderBase):
 
                 add_ig = self.get_or_none_resource(
                     self.client.instanceGroups,
+                    project=self.credential.project,
                     zone=zone,
                     instanceGroup=group_name
                 )
