@@ -48,6 +48,11 @@ class InstanceGroup(Document):
     vip = ReferenceField(Vip, required=True, reverse_delete_rule=CASCADE)
     name = StringField(required=True, max_length=60)
     zone = StringField(required=True, max_length=50)
+    meta = {
+        'indexes': [
+            {'fields': ('name', 'zone'), 'unique': True}
+        ]
+    }
 
     @property
     def uuid(self):

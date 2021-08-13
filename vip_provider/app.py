@@ -146,7 +146,6 @@ def create_instance_group(provider_name, env, vip):
     vip_dns = data.get("vip_dns", None)
     equipments = data.get("equipments", None)
     destroy_vip = data.get("destroy_vip", None)
-    team_name = data.get("team_name", None)
 
     if request.method == "POST" and not(group and port):
         return response_invalid_request("Invalid data {}".format(data))
@@ -162,8 +161,8 @@ def create_instance_group(provider_name, env, vip):
         return response_created(
             vip_identifier=str(vip[0].id),
             groups=[
-                {'identifier': str(x.id),
-                 'name': x.name} for x in vip[1]])
+                {'identifier': str(x[0].id),
+                 'name': x[0].name} for x in vip[1]])
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
