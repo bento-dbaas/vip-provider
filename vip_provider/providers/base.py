@@ -45,8 +45,7 @@ class ProviderBase(BaseProvider):
         vip.save()
 
         for ig in instance_groups:
-            ig.vip = vip
-            ig.save()
+            ig.update(vip=vip, upsert=True)
 
         return vip, instance_groups
 

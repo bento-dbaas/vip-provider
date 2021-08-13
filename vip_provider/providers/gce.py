@@ -114,13 +114,11 @@ class ProviderGce(ProviderBase):
         groups = []
         for eq in equipments:
             zone = eq.get("zone", None)
-            eq_id = eq.get("identifier", None)
             group_name = self.__get_instance_group_name(
                 vip.group,
                 zone
             )
             if group_name not in groups:
-                ig = InstanceGroup()
 
                 add_ig = self.get_or_none_resource(
                     self.client.instanceGroups,
@@ -142,8 +140,10 @@ class ProviderGce(ProviderBase):
                         operation=add_ig.get('name')
                     )
 
-                ig.name = group_name
-                ig.zone = zone
+                ig = InstanceGroup.objects(
+                    name=group_name,
+                    zone=zone
+                )
                 groups.append(ig)
 
         vip.vip_id = vip.group
@@ -295,6 +295,7 @@ class ProviderGce(ProviderBase):
         conf = {"backends": [
                 {'group': x,
                  "failover": i > 0} for i, x in enumerate(instance_group_uri)]}
+
         bs = self.client.regionBackendServices().patch(
             project=self.credential.project,
             region=self.credential.region,
