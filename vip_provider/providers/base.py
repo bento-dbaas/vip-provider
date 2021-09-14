@@ -31,11 +31,13 @@ class ProviderBase(BaseProvider):
         return vip
 
     def create_instance_group(self, group, port, vip_dns, equipments):
+        '''
         try:
             vip = Vip.objects(port=port, group=group).get()
         except DoesNotExist:
             vip = Vip()
-
+        '''
+        vip = Vip()
         vip.port = port
         vip.group = group
         instance_groups = self._create_instance_group(
