@@ -8,3 +8,4 @@ export MONGODB_PWD=[mongo_passwd]
 export MONGODB_USER=[mongo_user]
 export TAG_BACKUP_DBAAS=[tag_backup]
 export WORKERS=5
+export TEAM_API_URL=[team_api_url]
