@@ -132,8 +132,11 @@ def create_vip(provider_name, env):
     return response_created(identifier=str(vip.id), ip=vip.vip_ip)
 
 
-@app.route("/<string:provider_name>/<string:env>/instance-group",
+@app.route("/<string:provider_name>/<string:env>/instance-group/",
            defaults={'vip': None},
+           methods=['POST'])
+@app.route(("/<string:provider_name>/<string:env>/"
+            "/instance-group/<string:vip>"),
            methods=['POST'])
 @app.route(("/<string:provider_name>/<string:env>"
             "/instance-group/<string:vip>"),
@@ -143,7 +146,6 @@ def create_instance_group(provider_name, env, vip):
     data = request.get_json()
     group = data.get("group", None)
     port = data.get("port", None)
-    vip_dns = data.get("vip_dns", None)
     equipments = data.get("equipments", None)
     destroy_vip = data.get("destroy_vip", None)
 
@@ -153,16 +155,15 @@ def create_instance_group(provider_name, env, vip):
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
         if request.method == "DELETE":
-            provider.remove_instance_group(
-                equipments, vip, destroy_vip)
+            provider.remove_instance_group(equipments, vip, destroy_vip)
             return response_no_content()
 
-        vip = provider.create_instance_group(group, port, vip_dns, equipments)
+        vip_obj = provider.create_instance_group(group, port, equipments, vip)
         return response_created(
-            vip_identifier=str(vip[0].id),
-            groups=[
-                {'identifier': str(x[0].id),
-                 'name': x[0].name} for x in vip[1]])
+            vip_identifier=str(vip_obj[0].id),
+            groups=[{
+                'identifier': str(x[0].id),
+                'name': x[0].name} for x in vip_obj[1]])
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
