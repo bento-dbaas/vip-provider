@@ -30,24 +30,23 @@ class ProviderBase(BaseProvider):
 
         return vip
 
-    def create_instance_group(self, group, port, vip_dns, equipments):
-        try:
-            vip = Vip.objects(port=port, group=group).get()
-        except DoesNotExist:
-            vip = Vip()
-
-        vip.port = port
-        vip.group = group
+    def create_instance_group(self, group, port, equipments, vip):
+        if vip:
+            vip_obj = Vip.objects(pk=vip).get()
+        else:
+            vip_obj = Vip()
+        vip_obj.port = port
+        vip_obj.group = group
         instance_groups = self._create_instance_group(
-            vip, equipments)
+            vip_obj, equipments)
 
-        vip.vip_ip = ""
-        vip.save()
+        vip_obj.vip_ip = ""
+        vip_obj.save()
 
         for ig in instance_groups:
-            ig.update(vip=vip, upsert=True)
+            ig.update(vip=vip_obj, upsert=True)
 
-        return vip, instance_groups
+        return vip_obj, instance_groups
 
     def add_instance_in_group(self, equipments, vip):
         vip_obj = Vip.objects(pk=vip).get()
