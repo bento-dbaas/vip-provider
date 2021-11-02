@@ -344,7 +344,9 @@ class ProviderGce(ProviderBase):
             "healthChecks": [healthcheck_uri],
             "protocol": "TCP",
             "failoverPolicy": {
+                "disableConnectionDrainOnFailover": True,
                 "dropTrafficIfUnhealthy": True,
+                "failoverRatio": 0
             }
         }
 
