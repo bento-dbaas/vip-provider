@@ -26,3 +26,4 @@ HTTPS_PROXY = getenv("DBAAS_HTTPS_PROXY", None)
 
 AWS_PROXY = getenv("AWS_PROXY", None)
 TEAM_API_URL = getenv("TEAM_API_URL", None)
+SENTRY_DSN = getenv("SENTRY_DSN", None)

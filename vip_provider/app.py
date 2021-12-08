@@ -7,7 +7,7 @@ from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
 from mongoengine import connect
 from vip_provider.settings import APP_USERNAME, APP_PASSWORD, \
-    MONGODB_PARAMS, MONGODB_DB
+    MONGODB_PARAMS, MONGODB_DB, SENTRY_DSN
 from vip_provider.providers import get_provider_to
 from vip_provider.models import Vip
 
@@ -15,6 +15,10 @@ from vip_provider.models import Vip
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 cors = CORS(app)
+
+if SENTRY_DSN:
+    sentry = Sentry(app, dsn=SENTRY_DSN)
+
 connect(MONGODB_DB, **MONGODB_PARAMS)
 
 
