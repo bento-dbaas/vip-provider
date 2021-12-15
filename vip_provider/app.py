@@ -165,7 +165,7 @@ def create_instance_group(provider_name, env, vip):
         provider = provider_cls(env)
         if request.method == "DELETE":
             remove = provider.remove_instance_group(
-                      equipments, vip, destroy_vip)
+             equipments, vip, destroy_vip)
 
             if remove is None:
                 return response_not_found()
