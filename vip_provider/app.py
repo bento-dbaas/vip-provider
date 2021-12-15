@@ -134,6 +134,10 @@ def create_vip(provider_name, env):
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
+
+    if vip is None:
+        return response_ok()
+
     return response_created(identifier=str(vip.id), ip=vip.vip_ip)
 
 
@@ -160,10 +164,18 @@ def create_instance_group(provider_name, env, vip):
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
         if request.method == "DELETE":
-            provider.remove_instance_group(equipments, vip, destroy_vip)
+            remove = provider.remove_instance_group(
+                      equipments, vip, destroy_vip)
+
+            if remove is None:
+                return response_not_found()
+
             return response_no_content()
 
         vip_obj = provider.create_instance_group(group, port, equipments, vip)
+        if vip_obj is None:
+            return response_ok()
+
         return response_created(
             vip_identifier=str(vip_obj[0].id),
             groups=[{
@@ -314,6 +326,9 @@ def allocate_ip(provider_name, env, vip):
             return response_no_content()
 
         ip_info = provider.allocate_ip(vip)
+        if ip_info is None:
+            return response_ok()
+
         return response_created(**ip_info)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
@@ -434,7 +449,7 @@ def response_invalid_request(error, status_code=500):
     return _response(status_code, error=error)
 
 
-def response_not_found(identifier):
+def response_not_found(identifier=None):
     error = "Could not found with {}".format(identifier)
     return _response(404, error=error)
 

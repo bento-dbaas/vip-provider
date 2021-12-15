@@ -26,9 +26,12 @@ class ProviderBase(BaseProvider):
         vip.equipments = equipments
         vip.vip_dns = vip_dns
         self._create_vip(vip)
-        vip.save()
 
-        return vip
+        if vip.vip_id:
+            vip.save()
+            return vip
+
+        return None
 
     def create_instance_group(self, group, port, equipments, vip):
         if vip:
@@ -40,7 +43,11 @@ class ProviderBase(BaseProvider):
         instance_groups = self._create_instance_group(
             vip_obj, equipments)
 
+        if instance_groups is None:
+            return None
+
         vip_obj.vip_ip = ""
+
         vip_obj.save()
 
         for ig in instance_groups:
@@ -56,12 +63,15 @@ class ProviderBase(BaseProvider):
                               destroy_vip=False, only_if_empty=False):
         instance_groups = []
         for eq in equipments:
-            instance_groups.append(
-                InstanceGroup.objects(
-                    vip=vip,
-                    zone=eq.get('zone')
-                ).get()
-            )
+            try:
+                instance_groups.append(
+                    InstanceGroup.objects(
+                        vip=vip,
+                        zone=eq.get('zone')
+                    ).get()
+                )
+            except InstanceGroup.DoesNotExist:
+                return None
 
         vip_obj = Vip.objects(pk=vip).get()
 
@@ -152,6 +162,9 @@ class ProviderBase(BaseProvider):
         vip_obj = Vip.objects(pk=vip).get()
         ip_info = self._allocate_ip(vip_obj)
 
+        if ip_info is None:
+            return None
+
         vip_obj.vip_ip_name = ip_info.get('name')
         vip_obj.vip_ip = ip_info.get('address')
         vip_obj.save()
@@ -188,40 +201,40 @@ class ProviderBase(BaseProvider):
         raise NotImplementedError
 
     def _create_instance_group(self, *args, **kwargs):
-        raise NotImplementedError
+        pass
 
     def _add_instance_in_group(self, *args, **kwargs):
-        raise NotImplementedError
+        pass
 
     def _remove_instance_group(self, *args, **kwargs):
-        raise NotImplementedError
+        pass
 
     def _update_backend_service(self, *args, **kwargs):
-        raise NotImplementedError
+        pass
 
     def _create_healthcheck(self, vip):
-        raise NotImplementedError
+        pass
 
     def _destroy_healthcheck(self, vip):
-        raise NotImplementedError
+        pass
 
     def _create_backend_service(self, vip):
-        raise NotImplementedError
+        pass
 
     def _destroy_backend_service(self, vip):
-        raise NotImplementedError
+        pass
 
-    def _create_forwading_rule(self, vip):
-        raise NotImplementedError
+    def _create_forwarding_rule(self, vip):
+        pass
 
     def _destroy_forwarding_rule(self, vip):
-        raise NotImplementedError
+        pass
 
     def _allocate_ip(self, vip):
-        raise NotImplementedError
+        pass
 
     def _destroy_allocate_ip(self, vip):
-        raise NotImplementedError
+        pass
 
     def delete_vip(self, identifier):
         vip = Vip.objects(id=identifier).get()
@@ -229,10 +242,10 @@ class ProviderBase(BaseProvider):
         vip.delete()
 
     def _delete_vip(self, vip):
-        raise NotImplementedError
+        pass
 
     def _add_tags_in_forwarding_rules(self, vip, **kwargs):
-        raise NotImplementedError
+        pass
 
     def get_vip(self, identifier):
         try:

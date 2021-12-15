@@ -536,3 +536,6 @@ class ProviderGce(ProviderBase):
             region=self.credential.region,
             address=ip_name
         ).execute()
+
+    def _create_vip(self, vip):
+        return None
