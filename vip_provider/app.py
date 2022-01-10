@@ -416,6 +416,7 @@ def remove_vip_real(provider_name, env, vip_id, real_id):
 
 @app.route("/<string:provider_name>/<string:env>/vip/healthy", methods=["POST"])
 @auth.login_required
+@log_this
 def get_vip_healthy(provider_name, env):
     data = request.get_json()
     vip_id = data.get("vip_id", None)
@@ -438,6 +439,7 @@ def get_vip_healthy(provider_name, env):
     "/<string:provider_name>/<string:env>/vip/<string:identifier>", methods=["DELETE"]
 )
 @auth.login_required
+@log_this
 def delete_vip(provider_name, env, identifier):
     try:
         provider_cls = get_provider_to(provider_name)
@@ -453,6 +455,7 @@ def delete_vip(provider_name, env, identifier):
     "/<string:provider_name>/<string:env>/vip/<string:identifier>", methods=["GET"]
 )
 @auth.login_required
+@log_this
 def get_vip(provider_name, env, identifier):
     try:
         provider_cls = get_provider_to(provider_name)
