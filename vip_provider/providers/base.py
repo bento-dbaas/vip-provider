@@ -62,16 +62,19 @@ class ProviderBase(BaseProvider):
     def remove_instance_group(self, equipments, vip,
                               destroy_vip=False, only_if_empty=False):
         instance_groups = []
-        for eq in equipments:
-            try:
-                instance_groups.append(
-                    InstanceGroup.objects(
-                        vip=vip,
-                        zone=eq.get('zone')
-                    ).get()
-                )
-            except InstanceGroup.DoesNotExist:
-                return None
+        if equipments:
+            for eq in equipments:
+                try:
+                    instance_groups.append(
+                        InstanceGroup.objects(
+                            vip=vip,
+                            zone=eq.get('zone')
+                        ).get()
+                    )
+                except InstanceGroup.DoesNotExist:
+                    return None
+        else:
+            instance_groups = InstanceGroup.objects(vip=vip)
 
         vip_obj = Vip.objects(pk=vip).get()
 
