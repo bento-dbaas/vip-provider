@@ -7,7 +7,6 @@ from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
 from mongoengine import connect
-from raven.contrib.flask import Sentry
 from vip_provider.settings import (
     APP_USERNAME,
     APP_PASSWORD,
@@ -28,6 +27,7 @@ auth = HTTPBasicAuth()
 cors = CORS(app)
 
 if SENTRY_DSN:
+    from raven.contrib.flask import Sentry
     sentry = Sentry(app, dsn=SENTRY_DSN)
 
 logging.basicConfig(level=LOGGING_LEVEL)
