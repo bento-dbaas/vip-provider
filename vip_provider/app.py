@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 from traceback import print_exc
 from bson import json_util
 from flask import Flask, request, jsonify, make_response
@@ -14,6 +15,9 @@ from vip_provider.settings import (
     MONGODB_DB,
     SENTRY_DSN,
 )
+
+from vip_provider.settings import LOGGING_LEVEL
+
 from vip_provider.providers import get_provider_to
 from vip_provider.models import Vip
 from dbaas_base_provider.log import log_this
@@ -25,6 +29,8 @@ cors = CORS(app)
 
 if SENTRY_DSN:
     sentry = Sentry(app, dsn=SENTRY_DSN)
+
+logging.basicConfig(level=LOGGING_LEVEL)
 
 connect(MONGODB_DB, **MONGODB_PARAMS)
 
