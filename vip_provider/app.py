@@ -516,3 +516,13 @@ def _vip_real_action(action, provider_name, env, vip_id, real_id, **kw):
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
     return response_ok()
+
+@app.route('/')
+def default_route():
+    response = "vip-provider, from dbaas/dbdev <br>"
+    try:
+        f = open("./build_info.txt")
+        response += f.readline()
+    except:
+        response += "build_info.txt not found"
+    return response
