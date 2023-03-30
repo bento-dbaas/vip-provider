@@ -30,11 +30,11 @@ docker_build:
 
 docker_run:
 	make docker_stop
-	docker rm vip_provider
-	docker run --name=vip_provider -d -p 80:80 dbaas/vip_provider 
+	docker rm vip_provider || true
+	docker run --name=vip_provider -d -p 8000:80 --platform linux/amd64 --env "WORKERS=2" --env "PORT=80" dbaas/vip_provider 
 
 docker_stop:
-	docker stop vip_provider
+	docker stop vip_provider || true
 
 docker_deploy_gcp:
 	@echo "tag usada:${TAG}"
