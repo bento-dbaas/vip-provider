@@ -19,12 +19,13 @@ class ProviderBase(BaseProvider):
             auth_info=None
         )
 
-    def create_vip(self, group, port, equipments, vip_dns):
+    def create_vip(self, group, port, equipments, vip_dns, region=None):
         vip = Vip()
         vip.port = port
         vip.group = group
         vip.equipments = equipments
         vip.vip_dns = vip_dns
+        vip.region = region
         self._create_vip(vip)
 
         if vip.vip_id:

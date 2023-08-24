@@ -23,6 +23,10 @@ class Vip(Document):
     #     if pair:
     #         self.resource_id = pair.resource_id
 
+    # Ingress Provider specific fields
+
+    region = StringField(required=False)
+
     @property
     def uuid(self):
         return str(self.pk)

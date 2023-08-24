@@ -16,7 +16,7 @@ from vip_provider.settings import (
 )
 
 from vip_provider.settings import LOGGING_LEVEL
-
+from vip_provider.providers.ingress import ProviderIngress
 from vip_provider.providers import get_provider_to
 from vip_provider.models import Vip
 from dbaas_base_provider.log import log_this
@@ -141,6 +141,34 @@ def create_vip(provider_name, env):
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
         vip = provider.create_vip(group, port, equipments, vip_dns)
+    except Exception as e:  # TODO What can get wrong here?
+        print_exc()  # TODO Improve log
+        return response_invalid_request(str(e))
+
+    if vip is None:
+        return response_ok()
+
+    return response_created(identifier=str(vip.id), ip=vip.vip_ip)
+
+
+@app.route("/<string:provider_name>/<string:env>/vip/new/ingress", methods=["POST"])
+@auth.login_required
+@log_this
+def create_vip(provider_name, env):
+    data = request.get_json()
+    group = data.get("group", None)
+    port = data.get("port", None)
+    vip_dns = data.get("vip_dns", None)
+    region = data.get("region", None)
+    equipments = data.get("equipments", None)
+
+    if not (group and port):
+        return response_invalid_request("Invalid data {}".format(data))
+
+    try:
+        provider_cls = get_provider_to(provider_name)
+        provider = provider_cls(env)
+        vip = ProviderIngress.create_ingress_vip(group, port, equipments, vip_dns, region)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
