@@ -29,3 +29,5 @@ AWS_PROXY = getenv("AWS_PROXY", None)
 TEAM_API_URL = getenv("TEAM_API_URL", None)
 SENTRY_DSN = getenv("SENTRY_DSN", None)
 LOGGING_LEVEL = int(getenv('LOGGING_LEVEL', logging.INFO))
+
+INGRESS_URL = getenv("INGRESS_PROVIDER_URL", None)

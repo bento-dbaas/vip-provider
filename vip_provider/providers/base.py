@@ -25,7 +25,8 @@ class ProviderBase(BaseProvider):
         vip.group = group
         vip.equipments = equipments
         vip.vip_dns = vip_dns
-        vip.region = region
+        if region != None:
+            vip.region = region
         self._create_vip(vip)
 
         if vip.vip_id:
