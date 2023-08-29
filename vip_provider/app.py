@@ -16,7 +16,6 @@ from vip_provider.settings import (
 )
 
 from vip_provider.settings import LOGGING_LEVEL
-from vip_provider.providers.ingress import ProviderIngress
 from vip_provider.providers import get_provider_to
 from vip_provider.models import Vip
 from dbaas_base_provider.log import log_this
