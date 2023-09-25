@@ -132,6 +132,9 @@ def create_vip(provider_name, env):
     port = data.get("port", None)
     vip_dns = data.get("vip_dns", None)
     equipments = data.get("equipments", None)
+    # INGRESS-only variables
+    team_name = data.get("team_name", None)
+    region = data.get("region", None)
 
     if not (group and port):
         return response_invalid_request("Invalid data {}".format(data))
@@ -139,7 +142,7 @@ def create_vip(provider_name, env):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
-        vip = provider.create_vip(group, port, equipments, vip_dns)
+        vip = provider.create_vip(group, port, equipments, vip_dns, team_name, region)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
@@ -191,11 +194,13 @@ def create_instance_group(provider_name, env, vip):
         if vip_obj is None:
             return response_ok()
 
+        groups = []
+        if vip_obj[1] != True:
+            groups = [{"identifier": str(x[0].id), "name": x[0].name} for x in vip_obj[1]]
+
         return response_created(
             vip_identifier=str(vip_obj[0].id),
-            groups=[
-                {"identifier": str(x[0].id), "name": x[0].name} for x in vip_obj[1]
-            ],
+            groups=groups,
         )
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
