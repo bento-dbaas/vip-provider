@@ -73,13 +73,13 @@ class ProviderIngress(ProviderBase):
             response = self._request(post, ingress_url, json=data, timeout=6000)
             if response.status_code not in [200, 201]:
                 raise response.raise_for_status()
-            ingress = response.json()['value']
+            ingress_prov_response = response.json()['value']
         except Exception as error:
             print(error)
             raise Exception
-        vip.port = ingress.get('port_external')
-        addresses = ingress.get('ip_external')
-        return {'name': ip_name, 'address': addresses}
+        vip.port = ingress_prov_response.get('port_external')
+        addresses = ingress_prov_response.get('ip_external')
+        return {'name': ip_name, 'address': addresses, 'port': vip.port}
 
     def destroy_allocate_ip(self, vip):
         vip_obj = Vip.objects(pk=vip).get()
