@@ -1,7 +1,8 @@
-from vip_provider.providers.base import ProviderBase
-from requests import post, get, delete
+from requests import post
+from traceback import print_exc
 from vip_provider.models import Vip
 from vip_provider.settings import INGRESS_URL
+from vip_provider.providers.base import ProviderBase
 
 
 class ProviderIngress(ProviderBase):
@@ -30,15 +31,26 @@ class ProviderIngress(ProviderBase):
         vip_obj.vip_ip = ""
 
         # INGRESS fields fill
-        vip_obj.hosts_ips = list(map(lambda x: x[u'host_address'], equipments))
+        vip_obj.ingress_provider_hosts_ips = list(map(lambda x: x[u'host_address'], equipments))
         vip_obj.save()
 
     def _create_healthcheck(self, vip):
+        '''
+        Atualmente retorna apenas o nome do healthcheck. Nao eh criado algo ainda
+        pois o ingress nao da suporte para tal
+        NOTA: eh necessario implementar o a funcionalidade de CRIAR o healthcheck
+        '''
+        #TODO implement healthcheck
         hc_name = "hc-%s" % vip.group
-        # Sera inserida a logica de HC do Ingress Provider
         return hc_name
 
     def _create_backend_service(self, vip):
+        '''
+        Atualmente retorna apenas o nome do backend_service. Nao eh criado algo ainda
+        pois o ingress nao da suporte para tal
+        NOTA: eh necessario implementar o a funcionalidade de CRIAR o backend service
+        '''
+        #TODO implement backend service
         bs_name = "bs-%s" % vip.group
         return bs_name
 
@@ -54,28 +66,29 @@ class ProviderIngress(ProviderBase):
         vip_obj.save()
         return ip_info
 
-    def _get_create_ingress_data(self, vip):
+    def _preopare_ingress_data(self, vip):
         data = {
-            "team": vip.team_name,
+            "team": vip.ingress_provider_team_name,
             "bank_port": vip.port,
-            "bank_address": vip.hosts_ips,
+            "bank_address": vip.ingress_provider_hosts_ips,
             "bank_type": 'MySQLFOXHA',
             "bank_name": vip.group,
-            "region": vip.region
+            "region": vip.ingress_provider_region
         }
         return data
 
     def _allocate_ip(self, vip):
         ip_name = "%s-lbip" % vip.group
-        data = self._get_create_ingress_data(vip)
+        data = self._preopare_ingress_data(vip)
         ingress_url = "{}/ingresslb/".format(INGRESS_URL)
         try:
             response = self._request(post, ingress_url, json=data, timeout=6000)
-            if response.status_code not in [200, 201]:
+            if response.status_code != 201:
+                #TODO informar motivo da request nao ser 201
                 raise response.raise_for_status()
             ingress_prov_response = response.json()['value']
-        except Exception as error:
-            print(error)
+        except Exception:
+            print_exc()
             raise Exception
         vip.port = ingress_prov_response.get('port_external')
         addresses = ingress_prov_response.get('ip_external')
@@ -91,4 +104,5 @@ class ProviderIngress(ProviderBase):
         return True
 
     def _destroy_allocate_ip(self, vip):
+        #TODO implementar remocao de LB no ingress provider
         pass

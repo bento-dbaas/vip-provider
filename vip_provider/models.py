@@ -24,9 +24,9 @@ class Vip(Document):
     #         self.resource_id = pair.resource_id
 
     # Ingress Provider specific fields
-    region = StringField(required=False)
-    hosts_ips = ListField(required=False)
-    team_name = StringField(required=False)
+    ingress_provider_region = StringField(required=False)
+    ingress_provider_hosts_ips = ListField(required=False)
+    ingress_provider_team_name = StringField(required=False)
 
     @property
     def uuid(self):
