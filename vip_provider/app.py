@@ -133,6 +133,7 @@ def create_vip(provider_name, env):
     vip_dns = data.get("vip_dns", None)
     equipments = data.get("equipments", None)
     # INGRESS-only variables
+    ingress_provider_db_name = data.get("database_name", None)
     ingress_provider_team_name = data.get("team_name", None)
     ingress_provider_region = data.get("region", None)
 
@@ -143,7 +144,8 @@ def create_vip(provider_name, env):
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
         vip = provider.create_vip(group, port, equipments, vip_dns,
-                                  ingress_provider_team_name, ingress_provider_region)
+                                  ingress_provider_team_name, ingress_provider_region,
+                                  ingress_provider_db_name)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))

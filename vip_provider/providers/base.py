@@ -19,7 +19,7 @@ class ProviderBase(BaseProvider):
             auth_info=None
         )
 
-    def create_vip(self, group, port, equipments, vip_dns, team_name=None, region=None):
+    def create_vip(self, group, port, equipments, vip_dns, team_name=None, region=None, database_name=None):
         vip = Vip()
         vip.port = port
         vip.group = group
@@ -29,6 +29,7 @@ class ProviderBase(BaseProvider):
         #INGRESS ONLY VARIABLES
         vip.ingress_provider_region = region
         vip.ingress_provider_team_name = team_name
+        vip.ingress_provider_db_name = database_name
         self._create_vip(vip)
         if vip.vip_id:
             vip.save()

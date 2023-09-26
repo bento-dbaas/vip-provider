@@ -24,6 +24,7 @@ class Vip(Document):
     #         self.resource_id = pair.resource_id
 
     # Ingress Provider specific fields
+    ingress_provider_db_name = StringField(required=False)
     ingress_provider_region = StringField(required=False)
     ingress_provider_hosts_ips = ListField(required=False)
     ingress_provider_team_name = StringField(required=False)
