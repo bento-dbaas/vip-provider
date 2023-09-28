@@ -203,7 +203,7 @@ def create_instance_group(provider_name, env, vip):
             groups = [{"identifier": str(x[0].id), "name": x[0].name} for x in new_groups]
 
         return response_created(
-            vip_identifier=str(vip_obj[0].id),
+            vip_identifier=str(vip_obj.id),
             groups=groups,
         )
     except Exception as e:  # TODO What can get wrong here?

@@ -26,13 +26,14 @@ class ProviderIngress(ProviderBase):
         else:
             vip_obj = Vip()
         vip_obj.port = port
-        vip_obj.group = group
         vip_obj.vip_id = group
         vip_obj.vip_ip = ""
 
         # INGRESS fields fill
         vip_obj.ingress_provider_hosts_ips = list(map(lambda x: x[u'host_address'], equipments))
         vip_obj.save()
+        instance_groups = []
+        return vip_obj, instance_groups
 
     def _create_healthcheck(self, vip):
         '''
