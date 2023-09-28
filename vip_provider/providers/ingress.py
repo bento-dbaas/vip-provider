@@ -49,9 +49,7 @@ class ProviderIngress(ProviderBase):
         '''
         Atualmente retorna apenas o nome do backend_service. Nao eh criado algo ainda
         pois o ingress nao da suporte para tal
-        NOTA: eh necessario implementar o a funcionalidade de CRIAR o backend service
         '''
-        #TODO implement backend service
         bs_name = "bs-%s" % vip.group
         return bs_name
 
@@ -67,7 +65,7 @@ class ProviderIngress(ProviderBase):
         vip_obj.save()
         return ip_info
 
-    def _preopare_ingress_data(self, vip):
+    def _prepare_ingress_data(self, vip):
         data = {
             "team": vip.ingress_provider_team_name,
             "bank_port": vip.port,
@@ -80,7 +78,7 @@ class ProviderIngress(ProviderBase):
 
     def _allocate_ip(self, vip):
         ip_name = "%s-lbip" % vip.group
-        data = self._preopare_ingress_data(vip)
+        data = self._prepare_ingress_data(vip)
         ingress_url = "{}/ingresslb/".format(INGRESS_URL)
         try:
             response = self._request(post, ingress_url, json=data, timeout=6000)
