@@ -20,6 +20,13 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # RUN apt-get -o Acquire::Check-Valid-Until=false update
 
 # Maybe run upgrade as well???
+
+RUN rm /etc/apt/sources.list
+RUN echo "deb http://archive.debian.org/debian/ jessie main" | tee -a /etc/apt/sources.list
+RUN echo "deb-src http://archive.debian.org/debian/ jessie main" | tee -a /etc/apt/sources.list
+RUN echo "Acquire::Check-Valid-Until false;" | tee -a /etc/apt/apt.conf.d/10-nocheckvalid
+RUN echo 'Package: *\nPin: origin "archive.debian.org"\nPin-Priority: 500' | tee -a /etc/apt/preferences.d/10-archive-pin
+
 RUN apt-get update
 RUN apt-get install -y python-dev --force-yes
 RUN apt-get install -y build-essential --force-yes

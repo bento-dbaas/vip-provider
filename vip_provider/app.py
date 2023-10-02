@@ -16,7 +16,6 @@ from vip_provider.settings import (
 )
 
 from vip_provider.settings import LOGGING_LEVEL
-
 from vip_provider.providers import get_provider_to
 from vip_provider.models import Vip
 from dbaas_base_provider.log import log_this
@@ -133,6 +132,10 @@ def create_vip(provider_name, env):
     port = data.get("port", None)
     vip_dns = data.get("vip_dns", None)
     equipments = data.get("equipments", None)
+    # INGRESS-only variables
+    ingress_provider_db_name = data.get("database_name", None)
+    ingress_provider_team_name = data.get("team_name", None)
+    ingress_provider_region = data.get("region", None)
 
     if not (group and port):
         return response_invalid_request("Invalid data {}".format(data))
@@ -140,7 +143,9 @@ def create_vip(provider_name, env):
     try:
         provider_cls = get_provider_to(provider_name)
         provider = provider_cls(env)
-        vip = provider.create_vip(group, port, equipments, vip_dns)
+        vip = provider.create_vip(group, port, equipments, vip_dns,
+                                  ingress_provider_team_name, ingress_provider_region,
+                                  ingress_provider_db_name)
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log
         return response_invalid_request(str(e))
@@ -149,6 +154,8 @@ def create_vip(provider_name, env):
         return response_ok()
 
     return response_created(identifier=str(vip.id), ip=vip.vip_ip)
+
+
 
 
 @app.route(
@@ -186,15 +193,18 @@ def create_instance_group(provider_name, env, vip):
 
             return response_no_content()
 
-        vip_obj = provider.create_instance_group(group, port, equipments, vip)
+        vip_obj, new_groups = provider.create_instance_group(group, port, equipments, vip)
+
         if vip_obj is None:
             return response_ok()
 
+        groups = []
+        if new_groups != []:
+            groups = [{"identifier": str(x[0].id), "name": x[0].name} for x in new_groups]
+
         return response_created(
-            vip_identifier=str(vip_obj[0].id),
-            groups=[
-                {"identifier": str(x[0].id), "name": x[0].name} for x in vip_obj[1]
-            ],
+            vip_identifier=str(vip_obj.id),
+            groups=groups,
         )
     except Exception as e:  # TODO What can get wrong here?
         print_exc()  # TODO Improve log

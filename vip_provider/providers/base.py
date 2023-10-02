@@ -19,14 +19,22 @@ class ProviderBase(BaseProvider):
             auth_info=None
         )
 
-    def create_vip(self, group, port, equipments, vip_dns):
+    def create_vip(self, group, port, equipments, vip_dns,
+                   ingress_provider_team_name=None,
+                   ingress_provider_region=None,
+                   ingress_provider_db_name=None):
         vip = Vip()
         vip.port = port
         vip.group = group
         vip.equipments = equipments
         vip.vip_dns = vip_dns
-        self._create_vip(vip)
 
+        #INGRESS ONLY VARIABLES
+        vip.ingress_provider_region = ingress_provider_region
+        vip.ingress_provider_team_name = ingress_provider_team_name
+        vip.ingress_provider_db_name = ingress_provider_db_name
+
+        self._create_vip(vip)
         if vip.vip_id:
             vip.save()
             return vip
@@ -42,17 +50,12 @@ class ProviderBase(BaseProvider):
         vip_obj.group = group
         instance_groups = self._create_instance_group(
             vip_obj, equipments)
-
         if instance_groups is None:
-            return None
-
+            return None, None
         vip_obj.vip_ip = ""
-
         vip_obj.save()
-
         for ig in instance_groups:
             ig.update(vip=vip_obj, upsert=True)
-
         return vip_obj, instance_groups
 
     def add_instance_in_group(self, equipments, vip):
