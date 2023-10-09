@@ -7,6 +7,8 @@ from vip_provider.providers.base import ProviderBase
 
 class ProviderIngress(ProviderBase):
 
+    _ingress_initial_port = 3306
+
     @classmethod
     def get_provider(cls):
         return 'ingress'
@@ -68,7 +70,7 @@ class ProviderIngress(ProviderBase):
     def _prepare_ingress_data(self, vip):
         data = {
             "team": vip.ingress_provider_team_name,
-            "bank_port": vip.port,
+            "bank_port": self._ingress_initial_port,
             "bank_address": vip.ingress_provider_hosts_ips,
             "bank_type": 'MySQLFOXHA',
             "bank_name": vip.group,
@@ -78,6 +80,14 @@ class ProviderIngress(ProviderBase):
 
     def _allocate_ip(self, vip):
         ip_name = "%s-lbip" % vip.group
+
+        """
+        NAO HA NECESSIDADE DE CRIAR NOVO VIP COM INGRESSLB,
+         basta usar mesmas infos ja fornecidas pelo Ingress Provider 
+        """
+        if vip.vip_ip != '':
+            return {'name': ip_name, 'address': vip.vip_ip, 'port': vip.port}
+
         data = self._prepare_ingress_data(vip)
         ingress_url = "{}/ingresslb/".format(INGRESS_URL)
         try:
