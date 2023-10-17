@@ -133,9 +133,9 @@ def create_vip(provider_name, env):
     vip_dns = data.get("vip_dns", None)
     equipments = data.get("equipments", None)
     # INGRESS-only variables
-    ingress_provider_db_name = data.get("database_name", None)
+    ingress_provider_db_name = data.get("ingress_database_name", None)
     ingress_provider_team_name = data.get("team_name", None)
-    ingress_provider_region = data.get("region", None)
+    ingress_provider_region = data.get("ingress_region", None)
 
     if not (group and port):
         return response_invalid_request("Invalid data {}".format(data))
