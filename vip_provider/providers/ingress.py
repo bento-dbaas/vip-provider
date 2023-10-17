@@ -73,7 +73,7 @@ class ProviderIngress(ProviderBase):
             "bank_port": self._ingress_initial_port,
             "bank_address": vip.ingress_provider_hosts_ips,
             "bank_type": 'MySQLFOXHA',
-            "bank_name": vip.group,
+            "bank_name": vip.ingress_provider_db_name,
             "region": vip.ingress_provider_region
         }
         return data
