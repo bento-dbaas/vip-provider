@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import requests
+import datetime
+from requests.auth import HTTPBasicAuth
+
 from vip_provider.models import Vip, InstanceGroup
-
 from dbaas_base_provider.baseProvider import BaseProvider
-
 from mongoengine.queryset import DoesNotExist
+
+from vip_provider.settings import TEAM_API_URL, DBAAS_TEAM_API_URL, USER_DBAAS_API, PASSWORD_DBAAS_API
 
 
 class ProviderBase(BaseProvider):
@@ -259,3 +263,28 @@ class ProviderBase(BaseProvider):
         except Vip.DoesNotExist:
             pass
         return None
+
+    def get_team(self, team_name, infra_name='', database_name='', engine_name=''):
+        team_labels = {}
+        url = DBAAS_TEAM_API_URL + team_name
+        response = requests.get(url, verify=False, auth=HTTPBasicAuth(USER_DBAAS_API, PASSWORD_DBAAS_API))
+        if response.status_code == 200:
+            team = response.json()
+            team_labels = {
+                "servico_de_negocio": team["business_service"],
+                "cliente": team["client"],
+                "team_slug_name": team["slug"],
+                "team_id": team["identifier"],
+                "created_at": datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
+                "engine": engine_name,
+                "infra_name": infra_name,
+                "database_name": database_name
+            }
+        else:
+            team = TeamClient(api_url=TEAM_API_URL, team_name=team_name)
+            team_labels = team.make_labels(
+                engine_name=engine_name,
+                infra_name=infra_name,
+                database_name=database_name
+            )
+        return team_labels

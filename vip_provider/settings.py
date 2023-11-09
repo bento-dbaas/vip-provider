@@ -24,9 +24,13 @@ APP_PASSWORD = getenv("APP_PASSWORD", None)
 
 HTTP_PROXY = getenv("DBAAS_HTTP_PROXY", None)
 HTTPS_PROXY = getenv("DBAAS_HTTPS_PROXY", None)
-
 AWS_PROXY = getenv("AWS_PROXY", None)
+
 TEAM_API_URL = getenv("TEAM_API_URL", None)
+DBAAS_TEAM_API_URL = getenv("DBAAS_TEAM_API_URL", "")
+USER_DBAAS_API = getenv("USER_DBAAS_API", "user")
+PASSWORD_DBAAS_API = getenv("PASSWORD_DBAAS_API", "password")
+
 SENTRY_DSN = getenv("SENTRY_DSN", None)
 LOGGING_LEVEL = int(getenv('LOGGING_LEVEL', logging.INFO))
 
