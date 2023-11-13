@@ -388,7 +388,7 @@ class ProviderGce(ProviderBase):
         infra_name = kwargs.get("infra_name", None)
         database_name = kwargs.get("database_name", None)
 
-        labels = self.get_team(team_name, infra_name, database_name, engine_name)
+        labels = self.get_team_labels_formatted(team_name, infra_name, database_name, engine_name)
 
         label_fingerprint = self.client\
             .forwardingRules().get(

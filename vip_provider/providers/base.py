@@ -8,6 +8,7 @@ from dbaas_base_provider.baseProvider import BaseProvider
 from mongoengine.queryset import DoesNotExist
 
 from vip_provider.settings import TEAM_API_URL, DBAAS_TEAM_API_URL, USER_DBAAS_API, PASSWORD_DBAAS_API
+from vip_provider.clients.team import TeamClient
 
 
 class ProviderBase(BaseProvider):
@@ -264,7 +265,7 @@ class ProviderBase(BaseProvider):
             pass
         return None
 
-    def get_team(self, team_name, infra_name='', database_name='', engine_name=''):
+    def get_team_labels_formatted(self, team_name, infra_name='', database_name='', engine_name=''):
         team_labels = {}
         url = DBAAS_TEAM_API_URL + team_name
         response = requests.get(url, verify=False, auth=HTTPBasicAuth(USER_DBAAS_API, PASSWORD_DBAAS_API))
