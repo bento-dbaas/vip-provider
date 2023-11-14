@@ -3,6 +3,7 @@ FROM python:2.7.9-slim
 # Python optimization to run on docker
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONIOENCODING UTF-8
 
 #tentativa 2
 # RUN echo "deb [check-valid-until=no] http://archive.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list
