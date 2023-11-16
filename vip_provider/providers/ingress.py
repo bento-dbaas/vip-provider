@@ -91,7 +91,7 @@ class ProviderIngress(ProviderBase):
         data = self._prepare_ingress_data(vip)
         ingress_url = "{}/ingresslb/".format(INGRESS_URL)
         try:
-            response = self._request(post, ingress_url, json=data, timeout=6000)
+            response = self._request(post, ingress_url, json=data, timeout=12000)
             if response.status_code != 201:
                 #TODO informar motivo da request nao ser 201
                 raise response.raise_for_status()
