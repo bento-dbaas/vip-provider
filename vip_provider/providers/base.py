@@ -8,7 +8,7 @@ from dbaas_base_provider.baseProvider import BaseProvider
 from mongoengine.queryset import DoesNotExist
 
 from vip_provider.settings import TEAM_API_URL, DBAAS_TEAM_API_URL, USER_DBAAS_API, PASSWORD_DBAAS_API
-from vip_provider.clients.team import TeamClient
+from dbaas_base_provider.team import TeamClient
 
 
 class ProviderBase(BaseProvider):
