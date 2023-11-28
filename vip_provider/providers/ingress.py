@@ -22,11 +22,29 @@ class ProviderIngress(ProviderBase):
         vip.save()
         return None
 
+    def create_vip(self, group, port, equipments, vip_dns,
+                   ingress_provider_team_name=None,
+                   ingress_provider_region=None,
+                   ingress_provider_db_name=None):
+        vip = Vip()
+        vip.port = port
+        vip.group = group
+        vip.equipments = equipments
+        vip.vip_dns = vip_dns
+
+        #INGRESS ONLY VARIABLES
+        vip.ingress_provider_region = ingress_provider_region
+        vip.ingress_provider_team_name = ingress_provider_team_name
+        vip.ingress_provider_db_name = ingress_provider_db_name
+
+        self._create_vip(vip)
+        return None
+
     def create_instance_group(self, group, port, equipments, vip):
         if vip:
             vip_obj = Vip.objects(pk=vip).get()
         else:
-            vip_obj = Vip()
+            vip_obj = Vip.objects(group=group).get()
         vip_obj.port = port
         vip_obj.vip_id = group
         vip_obj.vip_ip = ""
