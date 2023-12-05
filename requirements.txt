@@ -7,7 +7,7 @@ click==7.1.2
 contextlib2==0.6.0.post1
 dbaas-base-provider==0.0.27
 dnspython==1.15.0
-Flask==1.0.2
+Flask==2.3.2
 Flask-Cors==3.0.9
 Flask-HTTPAuth==3.2.4
 futures==3.3.0
@@ -48,7 +48,7 @@ zope.interface==5.4.0
 
 # requests>=2.10.0
 # apache-libcloud==2.4.0
-# Flask==1.0.2
+# Flask==2.3.2
 # Flask-Cors==3.0.9
 # Flask-HTTPAuth==3.2.4
 # gevent==20.5.1
