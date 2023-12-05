@@ -35,7 +35,7 @@ pyparsing==2.4.7
 python-slugify==4.0.1
 pytz==2021.3
 raven==6.10.0
-requests==2.27.1
+requests==2.31.0
 rsa==4.5
 six==1.16.0
 text-unidecode==1.3
